@@ -541,7 +541,10 @@
 			function selectFile(x,y) {
 				changeSelectStatus();
 				if (x.checked || x == true) {
-					selectedFiles.push(y);
+					if (searcharray(y,selectedFiles)) {
+					} else {
+						selectedFiles.push(y);
+					}
 				} else {
 					var arrayItem = selectedFiles.indexOf(y);
 					if (arrayItem > -1) {
@@ -569,6 +572,18 @@
 					renameLink.classList.add("noselect");
 					editLink.classList.add("noselect");
 				}
+			}
+			function searcharray(search_for_string, array_to_search) 
+			{
+			    for (var i=0; i<array_to_search.length; i++) 
+				{
+			        if (array_to_search[i].match(search_for_string))
+					{ 
+						return true;
+					}
+			    }
+			 
+			    return false;
 			}
 			function editFile() {
 				if (selectedFiles.length == 1) {

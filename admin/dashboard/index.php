@@ -75,6 +75,29 @@
 				text-align: center;
 				font-size: 10pt;
 			}
+			.leftboxinner.nonfirst {
+				margin-top: 2px;
+			}
+			.leftnavtext {
+				margin-left: 5px;
+			}
+			.leftnavbutton {
+				padding: 8px;
+				margin: 0;
+				font-size: 8pt;
+				cursor: pointer;
+			}
+			.leftnavbutton:hover {
+				color: black;
+			}
+			.leftnavbutton.activebutton {
+				color: black;
+				font-weight: bold;
+				background-color: #e6EEEE;
+			}
+			.leftboxinner.button {
+				padding: 0;
+			}
 		</style>
 		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
@@ -93,6 +116,14 @@
 				<div class="leftboxinner load">
 					<i class="fa fa-spinner fa-pulse fa-fw"></i>
 				</div>
+			</div>
+		</div>
+		<div class="leftbox last">
+			<div class="leftboxinner button">
+				<p class="leftnavbutton activebutton" onClick="changeScreen(this,'explorer.php?loc=/')"><i class="fa fa-folder-open-o" aria-hidden="true"></i><span class="leftnavtext">File Manager</span></p>
+			</div>
+			<div class="leftboxinner nonfirst button">
+				<p class="leftnavbutton" onClick="changeScreen(this,'settings.php')"><i class="fa fa-cog" aria-hidden="true"></i><span class="leftnavtext">Settings</span></p>
 			</div>
 		</div>
 		<div class="leftbox last">
@@ -116,6 +147,12 @@
 				if (x == "start") {
 					loadBox.style.display = "block";
 				}
+			}
+			function changeScreen(x,y) {
+				inload("start");
+				document.getElementsByClassName('explorer')[0].src = y;
+				document.getElementsByClassName('activebutton')[0].classList.remove('activebutton');
+				x.classList.add('activebutton');
 			}
 		</script>
 	</body>
