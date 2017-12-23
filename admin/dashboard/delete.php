@@ -15,14 +15,30 @@
   }
  }
 	$files = explode(',', $_GET['files']);
+	$errors = '';
+	$okrun = true;
 	foreach ($files as $file) {
 		$splitpath = explode(":", $file);
 		if ($splitpath[0] == "dir") {
-			rrmdir('../../' . $splitpath[1]);
+			if (file_exists('../../' . $splitpath[1])) {
+				rrmdir('../../' . $splitpath[1]);
+			} else {
+				$errors = $errors . 'directory ' . $splitpath[1] . ' does not exist.<br />';
+				$okrun = false;
+			}
 		}
 		if ($splitpath[0] == "file") {
-			unlink('../../' . $splitpath[1]);
+			if (file_exists('../../' . $splitpath[1])) {
+				unlink('../../' . $splitpath[1]);
+			} else {
+				$errors = $errors . 'file ' . $splitpath[1] . ' does not exist.<br />';
+				$okrun = false;
+			}
 		}
 	}
-	header('location: explorer.php?loc=' . $_GET['loc']);
+	if ($okrun == true) {
+		header('location: explorer.php?loc=' . $_GET['loc']);
+	} else {
+		header('location: explorer.php?loc=' . $_GET['loc'] . '&errors=' . $errors);
+	}
 ?>

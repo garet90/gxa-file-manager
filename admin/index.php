@@ -47,6 +47,45 @@
 				padding: 0;
 				text-align: center;
 			}
+			#errorbox {
+				position: fixed;
+				display: <?php
+					if (isset($_GET['errors'])) {
+						echo "block";
+					} else {
+						echo "none";
+					}
+				?>;
+				-webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+			}
+			.errorbutton {
+				clear: both;
+				padding: 10px;
+				cursor: pointer;
+				height: 10px;
+				line-height: 10px;
+				position: absolute;
+				bottom: 0;
+				font-family: Sans-serif;
+				font-size: 8pt;
+				font-weight: bold;
+				background-color: white;
+				border: 0;
+				color: #3D3D3D;
+				margin-bottom: 15px;
+				left: 50%;
+				width: 100px;
+				margin-left: -62px;
+				text-align: center;
+			}
+			.errorbutton:hover {
+				background-color: #e6EEEE;
+			}
+			.errortext {
+				margin-bottom: 50px !important;
+			}
 		</style>
 	</head>
 	
@@ -64,6 +103,19 @@
 					<input type="submit" />
 				</form><br />
 				<span class="smol">GXa File Manager v0.1 BETA by Garet Halliday. <a href="https://github.com/garet90/gxa-file-manager">github</a></span>
+			</div>
+		</div>
+		<div class="center" id="errorbox">
+			<div class="boxinner first">
+				<p>An error occurred</p>
+			</div>
+			<div class="boxinner">
+				<p class="errortext"><?php
+					if (isset($_GET['errors'])) {
+						echo $_GET['errors'];
+					}
+				?></p>
+				<div class="errorbutton" onclick="this.parentElement.parentElement.style.display = 'none';">OK</div>
 			</div>
 		</div>
 	</body>

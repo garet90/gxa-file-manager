@@ -127,6 +127,9 @@
 			table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
 			background-color: #8dbdd8;
 			}
+			.sortable {
+				cursor: pointer;
+			}
 			.botText {
 				margin-right: 10px;
 				display: inline-block;
@@ -163,11 +166,63 @@
 			#verifyJS {
 				display: none;
 			}
+			#errorbox {
+				position: fixed;
+				display: <?php
+					if (isset($_GET['errors'])) {
+						echo "block";
+					} else {
+						echo "none";
+					}
+				?>;
+				-webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+			}
+			.errorbutton {
+				clear: both;
+				padding: 10px;
+				cursor: pointer;
+				height: 10px;
+				line-height: 10px;
+				position: absolute;
+				bottom: 0;
+				font-family: Sans-serif;
+				font-size: 8pt;
+				font-weight: bold;
+				background-color: white;
+				border: 0;
+				color: #3D3D3D;
+				margin-bottom: 15px;
+				left: 50%;
+				width: 100px;
+				margin-left: -62px;
+				text-align: center;
+			}
+			.errorbutton:hover {
+				background-color: #e6EEEE;
+			}
+			.errortext {
+				margin-bottom: 50px !important;
+			}
 		</style>
 		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
-	<body>
+	<body onLoad="top.inload('stop')">
 		<span id="verifyJS">false</span>
+		<div class="center" id="errorbox">
+			<div class="boxinner first">
+				<p>An error occurred</p>
+			</div>
+			<div class="boxinner">
+				<p class="errortext"><?php
+					if (isset($_GET['errors'])) {
+						echo $_GET['errors'];
+					}
+				?></p>
+				<div class="errorbutton" onclick="this.parentElement.parentElement.style.display = 'none';">OK</div>
+			</div>
+		</div>
 		<div class="center" id="confirmDelete">
 			<div class="boxinner first">
 				<p>Delete <span id="itemdel">file</span>?</p>
@@ -186,8 +241,17 @@
 					<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 					<input type="file" id="fileBox" name="file" />
 					<div class="delbut no" onClick="this.parentElement.parentElement.parentElement.style.display = 'none'; window.uploadToggle = 0;">Cancel</div>
-					<input type="submit" value="Upload" class="delbut yes" />
+					<input type="submit" onClick="top.inload('start')" value="Upload" class="delbut yes" />
 				</form>
+			</div>
+		</div>
+		<div class="center" id="copyItem">
+			<div class="boxinner first">
+				<p>Copy <span id="itemcopy">file</span>?</p>
+			</div>
+			<div class="boxinner">
+				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'; window.copyToggle = 0;">Cancel</div>
+				<div class="delbut yes" onClick="copyConfirmed();">Copy</div>
 			</div>
 		</div>
 		<div class="center" id="renameItem">
@@ -205,11 +269,11 @@
 		<table id="filetable" class="tablesorter">
 			<thead>
 				<tr>
-					<th data-sorter="false"><input type="checkbox" onClick="toggleAll(this)" /></th>
-					<th onclick="sortChange();"><i class="fa fa-file-o" aria-hidden="true"></i><div class="sortIcon" id="s4"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
-					<th onclick="sortChange();">Name<div class="sortIcon" id="s1"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
-					<th onclick="sortChange();">Size<div class="sortIcon" id="s2"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
-					<th onclick="sortChange();">Modified<div class="sortIcon" id="s3"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
+					<th data-sorter="false"><input type="checkbox" onClick="toggleAll(this)" id="toggleAllCheck" /></th>
+					<th onclick="sortChange();" class="sortable"><i class="fa fa-file-o" aria-hidden="true"></i><div class="sortIcon" id="s4"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
+					<th onclick="sortChange();" class="sortable">Name<div class="sortIcon" id="s1"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
+					<th onclick="sortChange();" class="sortable">Size<div class="sortIcon" id="s2"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
+					<th onclick="sortChange();" class="sortable">Modified<div class="sortIcon" id="s3"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -226,7 +290,8 @@
 						if (is_dir ('../../' . $_GET['loc'] . '/' . $file)) {
 							if ($file == '.') {
 								$filename = '';
-								$btext = '<div class="botText"><a href="?loc=' . $_GET['loc'] . '"><i class="fa fa-refresh" aria-hidden="true"></i><span class="littleIndent">Refresh</span></a></div>' . $btext;
+								$btext = '<div class="botText"><a onclick="' . "top.inload('start')" . '" href="?loc=' . $_GET['loc'] . '"><i class="fa fa-refresh" aria-hidden="true"></i><span class="littleIndent">Refresh</span></a></div>
+								' . $btext;
 							} else if ($file == '..') {
 								$newUrl = preg_replace('/(\/+)/','/',$_GET['loc']);
 								$splitLoc = explode('/', $newUrl);
@@ -236,13 +301,14 @@
 								}
 								$finLoc = join('/', $splitLoc);
 								$filename = '';
-								$btext = '<div class="botText"><a href="?loc=' . $finLoc . '/' . '"><i class="fa fa-folder-open-o" aria-hidden="true"></i><span class="littleIndent">Parent Directory</span></a></div>' . $btext;
+								$btext = '<div class="botText"><a onclick="' . "top.inload('start')" . '" href="?loc=' . $finLoc . '/' . '"><i class="fa fa-folder-open-o" aria-hidden="true"></i><span class="littleIndent">Parent Directory</span></a></div>
+								' . $btext;
 							} else {
 								$dirbef = $_GET['loc'] . '/' . $file;
 								$diraft = preg_replace('/(\/+)/','/',$dirbef);
 								$filePath = $_GET['loc'] . '/' . $file;
 								$filePath = preg_replace('/(\/+)/','/',$filePath);
-								$filename = '<tr><td><input class="fileInput" onClick="' . "selectFile(this,'dir:" . $filePath . "')" . '" type="checkbox" /></td><td><span class="filesn">1</span><i class="fa fa-folder-o" aria-hidden="true"></i></td><td><a href="?loc=' . $diraft . '">' . $file . '/</a></td><td></td><td></td></tr>';
+								$filename = '<tr><td><input class="fileInput" onClick="' . "selectFile(this,'dir:" . $filePath . "')" . '" type="checkbox" /></td><td><span class="filesn">1</span><i class="fa fa-folder-o" aria-hidden="true"></i></td><td><a onclick="' . "top.inload('start')" . '" href="?loc=' . $diraft . '">' . $file . '/</a></td><td></td><td></td></tr>';
 								$folderCount = $folderCount + 1;
 							}
 							echo $filename;
@@ -304,7 +370,24 @@
 		</table>
 		<?php
 		echo $btext;
-		?><div class="botText"><a href="javascript:createItem();"><i class="fa fa-file-o" aria-hidden="true"></i><span class="littleIndent">Create</span></a></div><div class="botText"><a href="javascript:uploadItem();"><i class="fa fa-upload" aria-hidden="true"></i><span class="littleIndent">Upload</span></a></div><div class="botText"><a href="javascript:deleteConf();" id="deleteLink" class="noselect"><i class="fa fa-trash-o" aria-hidden="true"></i><span class="littleIndent">Delete</span></a></div><div class="botText"><a href="javascript:editFile();" id="editLink" class="noselect"><i class="fa fa-pencil-square-o" aria-hidden="true"></i><span class="littleIndent">Edit</span></a></div><div class="botText"><a href="javascript:renameFile();" id="renameLink" class="noselect"><i class="fa fa-pencil" aria-hidden="true"></i><span class="littleIndent">Rename</span></a></div><br /><br />
+		?><div class="botText">
+			<a href="javascript:createItem();"><i class="fa fa-file-o" aria-hidden="true"></i><span class="littleIndent">Create</span></a>
+		</div>
+		<div class="botText">
+			<a href="javascript:uploadItem();"><i class="fa fa-upload" aria-hidden="true"></i><span class="littleIndent">Upload</span></a>
+		</div>
+		<div class="botText">
+			<a href="javascript:deleteConf();" id="deleteLink" class="noselect"><i class="fa fa-trash-o" aria-hidden="true"></i><span class="littleIndent">Delete</span></a>
+		</div>
+		<div class="botText">
+			<a href="javascript:editFile();" id="editLink" class="noselect"><i class="fa fa-pencil-square-o" aria-hidden="true"></i><span class="littleIndent">Edit</span></a>
+		</div>
+		<div class="botText">
+			<a href="javascript:renameFile();" id="renameLink" class="noselect"><i class="fa fa-pencil" aria-hidden="true"></i><span class="littleIndent">Rename</span></a>
+		</div>
+		<div class="botText">
+			<a class="noselect" href="javascript:copyFile();" id="copyLink"><i class="fa fa-files-o" aria-hidden="true"></i><span class="littleIndent">Copy</span></a>
+		</div><br /><br />
 		<?php
 		if ($folderStorage > 1024) {
 			if (($folderStorage / 1024) > 1024) {
@@ -323,13 +406,13 @@
 		$explodedURL = explode('/', $_GET['loc']);
 		$prevURLstring = "/";
 		foreach ($explodedURL as $key=>$URL) {
-			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "'>" . $URL . "</a>";
+			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "' onclick=" . '"' . "top.inload('start')" . '">' . $URL . "</a>";
 			$prevURLstring = $prevURLstring . $URL . '/';
 			$prevURLstring = preg_replace('/(\/+)/','/',$prevURLstring);
 		}
 		$joinedURL = join('/', $explodedURL);
 		
-		echo '<div class="locview"><a href="explorer.php?loc=/">root</a>' . $joinedURL . ' - ' . $fileCount . ' files, ' . $folderCount . ' folders, taking up ' . $folderStorage . '.</div>';
+		echo '<div class="locview"><a href="explorer.php?loc=/" onclick="' . "top.inload('start')" . '">root</a>' . $joinedURL . ' - ' . $fileCount . ' files, ' . $folderCount . ' folders, taking up ' . $folderStorage . '.</div>';
 		?>
 		<div class="center" id="createMenu">
 			<div class="boxinner first">
@@ -342,7 +425,7 @@
 					<input type="radio" name="filetype" value="file" id="fileType1" /><label for="fileType1">File</label><br />
 					<input type="radio" name="filetype" value="directory" id="fileType2" /><label for="fileType2">Directory</label></br /><br />
 					<label for="fileName">File Name</label><br /><input type="text" id="fileName" name="filename" class="textinput" />
-					<input class="delbut yes" type="submit" value="Create" />
+					<input class="delbut yes" onclick="top.inload('start')" type="submit" value="Create" />
 					<div class="delbut no" onClick="this.parentElement.parentElement.parentElement.style.display = 'none'; window.create = false;">Cancel</div>
 				</form>
 			</div>
@@ -381,11 +464,16 @@
 				} else if (selectedFiles.length > 1) {
 					delLoc = "<?php echo $_GET['loc'] ?>";
 					confirmDelete.style.display = "block";
-					itemdel.innerHTML = selectedFiles.length + " files";
+					itemdel.innerHTML = selectedFiles.length + " items";
 				}
 			}
 			function deleteConfirmed() {
-				window.location = "delete.php?loc=" + delLoc + "&files=" + selectedFiles.join(',');
+				top.inload('start');
+				if (selectedFiles.length > 0) {
+					window.location = "delete.php?loc=" + delLoc + "&files=" + selectedFiles.join(',');
+				} else {
+					window.location = "explorer.php?loc=<?php echo $_GET['loc']; ?>&errors=You can't delete nothing!";
+				}
 			}
 			function toggleAll(accord) {
 				var array = document.getElementsByClassName("fileInput");
@@ -451,6 +539,7 @@
 			}
 			var selectedFiles = [];
 			function selectFile(x,y) {
+				changeSelectStatus();
 				if (x.checked || x == true) {
 					selectedFiles.push(y);
 				} else {
@@ -461,11 +550,14 @@
 				}
 				var deleteLink = document.getElementById("deleteLink"),
 					renameLink = document.getElementById("renameLink"),
-					editLink = document.getElementById("editLink");
+					editLink = document.getElementById("editLink"),
+					copyLink = document.getElementById("copyLink");
 				if (selectedFiles.length > 0) {
 					deleteLink.classList.remove("noselect");
+					copyLink.classList.remove("noselect");
 				} else {
 					deleteLink.classList.add("noselect");
+					copyLink.classList.add("noselect");
 				}
 				if (selectedFiles.length == 1) {
 					var testSplit = selectedFiles[0].split(':');
@@ -485,6 +577,7 @@
 						var fileSplit = selectedFiles[0].split('/'),
 							fileName = fileSplit.pop();
 						window.location = "edit.php?loc=<?php echo $_GET['loc']; ?>&file=" + fileName;
+						top.inload('start');
 					}
 				}
 			}
@@ -502,10 +595,67 @@
 				}
 			}
 			function confirmRename() {
+				top.inload('start');
 				if (selectedFiles.length == 1) {
 					var newFileName = document.getElementById("newFileName").value;
 					window.location = "rename.php?file=" + selectedFiles[0] + "&loc=<?php echo $_GET['loc'] ?>&newname=" + newFileName;
+				} else {
+					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't rename " + selectedFiles.length + " files!";
 				}
+			}
+			var copyToggle = 0;
+			function copyFile() {
+				if (selectedFiles.length > 0) {
+					var copyItem = document.getElementById("copyItem");
+					if (copyToggle == 0) {
+						copyItem.style.display = "block";
+						copyToggle = 1;
+						var itemCopy = document.getElementById("itemcopy");
+						if (selectedFiles.length == 1) {
+							var filesplit = selectedFiles[0].split('/'),
+								filename = filesplit[filesplit.length-1];
+							itemCopy.innerHTML = filename;
+						} else if (selectedFiles.length > 1) {
+							itemCopy.innerHTML = selectedFiles.length + " items";
+						}
+					} else {
+						copyItem.style.display = "none";
+						copyToggle = 0;
+					}
+				}
+			}
+			function copyConfirmed() {
+				top.inload('start');
+				if (selectedFiles.length > 0) {
+					var selectedString = selectedFiles.join(",");
+					window.location = "copy.php?loc=<?php echo $_GET['loc'] ?>&files=" + selectedString;
+				} else {
+					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't copy nothing!";
+				}
+			}
+			function changeSelectStatus() {
+				var fileInput = document.getElementsByClassName("fileInput"),
+					arrchecked = false,
+					arrunchecked = false,
+					toggleAllCheck = document.getElementById("toggleAllCheck");
+				for(var ii = 0; ii < fileInput.length; ii++) {
+					if (fileInput[ii].checked == true) {
+						arrchecked = true;
+					} else if (fileInput[ii].checked == false) {
+						arrunchecked = true;
+					}
+				}
+				if (arrchecked == true && arrunchecked == true) {
+					toggleAllCheck.indeterminate = true;
+					toggleAllCheck.checked = true;
+				} else if (arrchecked == true && arrunchecked == false) {
+					toggleAllCheck.indeterminate = false;
+					toggleAllCheck.checked = true;
+				} else if (arrchecked == false && arrunchecked == true) {
+					toggleAllCheck.indeterminate = false;
+					toggleAllCheck.checked = false;
+				}
+				return arrchecked + ":" + arrunchecked;
 			}
 		</script>
 		<script type="text/javascript">
@@ -516,6 +666,7 @@
 		<script type="text/javascript">
 			var verifyJS = document.getElementById("verifyJS");
 			if (verifyJS.innerHTML == "false" || verifyJS.innerHTML == false) {
+				top.inload('start');
 				location.reload();
 			}
 		</script>

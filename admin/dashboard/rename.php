@@ -1,17 +1,26 @@
 <?php
 	require 'auth.php';
 	$continue = true;
-	if ($_GET['newname'] == "") {
-		echo 'File name cannot be empty!<br />';
+	$errors = '';
+	if (file_exists('../../' . $_GET['loc'] . '/' . $_GET['newname'])) {
+		$errors = $errors . 'File already exists!<br />';
 		$continue = false;
 	}
+	if ($_GET['newname'] == "") {
+		$errors = $errors . 'File name cannot be empty!<br />';
+		$continue = false;
+	}
+	if (strpos($_GET['newname'], '/') == true) {
+		$continue = false;
+		$errors = $errors . 'Invalid file name.<br />';
+	}
 	if ($continue == false) {
-		echo 'Your file was not renamed. <a href="explorer.php?loc=' . $_GET['loc'] . '">Go back</a>';
+		header('location: explorer.php?loc=' . $_GET['loc'] . '&errors=' . $errors);
 	} else {
 		$filesp = explode(':', $_GET['file']);
 		$newfile = '../../' . $_GET['loc'] . '/' . $_GET['newname'];
 		$fromfile = '../../' . $filesp[1];
 		rename($fromfile, $newfile);
+		header('location: explorer.php?loc=' . $_GET['loc']);
 	}
-	header('location: explorer.php?loc=' . $_GET['loc']);
 ?>

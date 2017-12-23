@@ -13,10 +13,10 @@
 			border: 0;
 			resize: none;
 			height: 70vh;
-			width: 99.75%;
+			width: 100%;
 			margin-left: -1px;
 			margin-top: -1px;
-			margin-bottom: -3px;
+			margin-bottom: -1px;
 		}
 		.wrapper {
 			padding: 2px;
@@ -56,12 +56,12 @@
 		</style>
 	</head>
 	
-	<body>
+	<body onload="top.inload('stop')">
 		<div class="wrapper">
 			<div class="inner top">
-				<div class="button" onclick='window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>"'>Back</div>
+				<div class="button" onclick='window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>"; top.inload("start");'>Back</div>
 				<form method="post" action="save.php">
-					<input type="submit" class="button" value="Save" />
+					<input type="submit" class="button" value="Save" onclick="top.inload('start')" />
 			</div>
 			<div class="inner">
 					<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />

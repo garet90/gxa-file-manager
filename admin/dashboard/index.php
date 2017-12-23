@@ -55,7 +55,28 @@
 				background-color: #e6EEEE;
 				color: black;
 			}
+			#loadbox {
+				width: 25px;
+				height: 25px;
+				position: absolute;
+				z-index: 100;
+				top: 50%;
+				left: 50%;
+				margin-top: -12.5px;
+				margin-left: -12.5px;
+				-webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+			}
+			.leftboxinner.load {
+				line-height: 23px;
+				padding: 0;
+				height: 23px;
+				text-align: center;
+				font-size: 10pt;
+			}
 		</style>
+		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
 	
 	<body>
@@ -68,6 +89,11 @@
 		</div>
 		<div class="rightbox">
 			<iframe src="explorer.php?loc=/" class="explorer"></iframe>
+			<div id="loadbox" class="leftbox">
+				<div class="leftboxinner load">
+					<i class="fa fa-spinner fa-pulse fa-fw"></i>
+				</div>
+			</div>
 		</div>
 		<div class="leftbox last">
 			<div class="leftboxinner">
@@ -81,5 +107,16 @@
 				?>
 			</div>
 		</div>
+		<script type="text/javascript">
+			var loadBox = document.getElementById("loadbox");
+			function inload(x) {
+				if (x == "stop") {
+					loadBox.style.display = "none";
+				}
+				if (x == "start") {
+					loadBox.style.display = "block";
+				}
+			}
+		</script>
 	</body>
 </html>
