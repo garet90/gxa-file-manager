@@ -1,4 +1,17 @@
 # GXa File Manager
-GXa File Manager lets you edit the files on your server from anywhere! It is a single folder application that lets you log in and edit your files using https://yourserverhere/admin/.
+GXa is a simple administration tool that allows you to edit the files on your server remotely. It is all stored in a single folder for easy installation and use. Only one server is required. 
 # Installation
-Move the admin folder into the root of your server, and change the src/admin/config.php file to your administrative username and password, then you can access GXa File Manager at serverIP/admin/.
+1. Download GXa File Manager from github
+2. Move gxa-file-manager/admin to the root directory of your server
+3. Login to /admin with:
+  - Username: admin
+  - Password: password
+4. Change username and password in admin/config.php
+# Requirements
+- PHP 5
+# Included Plugins
+- jQuery
+- Font Awesome
+- Tablesorter
+
+*All of these are open source and free to use.
