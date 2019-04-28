@@ -1,9 +1,16 @@
 <?php
 	require '../config.php';
-	if ($_COOKIE['user'] == $adminname && $_COOKIE['password'] == $adminpassword) {
-		
+	if (isset($_COOKIE['user']) && isset($_COOKIE['password'])) {
+		if ($_COOKIE['user'] == $adminname && $_COOKIE['password'] == $adminpassword) {
+			
+		} else {
+			$errors = 'Your username or password is incorrect';
+			header('Location: ../index.php?errors=' . $errors);
+			die();
+		}
 	} else {
-		echo "<script type='text/javascript'>top.location.href='../';</script>";
-		exit(0);
+		$errors = 'You are not logged in (cookies not set)';
+		header('Location: ../index.php?errors=' . $errors);
+		die();
 	}
 ?>

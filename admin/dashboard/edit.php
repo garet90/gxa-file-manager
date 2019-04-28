@@ -16,7 +16,7 @@
 			width: 100%;
 			margin-left: -1px;
 			margin-top: -1px;
-			margin-bottom: -1px;
+			margin-bottom: -3px;
 		}
 		.wrapper {
 			padding: 2px;
@@ -28,6 +28,7 @@
 			font-size: 8pt;
 			font-family: Sans-serif;
 			color: #3D3D3D;
+			overflow: hidden;
 		}
 		.inner.top {
 			padding: 8px 4px 8px 4px;
@@ -64,14 +65,13 @@
 					<input type="submit" class="button" value="Save" onclick="top.inload('start')" />
 			</div>
 			<div class="inner">
-					<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
-					<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
-					<div id="writeArea">
-						<textarea class="editorarea" name="data"><?php
-							echo file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file']);
-						?></textarea>
-					</div>
-				</form>
+				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
+				<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
+				<div id="writeArea">
+					<textarea class="editorarea" name="data"><?php
+						echo file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file']);
+					?></textarea>
+				</div>
 			</div>
 		</div>
 	</body>

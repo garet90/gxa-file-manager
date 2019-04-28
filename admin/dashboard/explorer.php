@@ -228,6 +228,7 @@
 				<p>Delete <span id="itemdel">file</span>?</p>
 			</div>
 			<div class="boxinner">
+				<p class="errortext">Are you sure? This item will be gone forever.</p>
 				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'">Cancel</div>
 				<div class="delbut yes" onClick="deleteConfirmed();">Delete</div>
 			</div>
@@ -250,6 +251,7 @@
 				<p>Copy <span id="itemcopy">file</span>?</p>
 			</div>
 			<div class="boxinner">
+				<p class="errortext">Copies will be named "copy.[original file name]".</p>
 				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'; window.copyToggle = 0;">Cancel</div>
 				<div class="delbut yes" onClick="copyConfirmed();">Copy</div>
 			</div>
