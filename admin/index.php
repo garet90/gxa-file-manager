@@ -102,7 +102,7 @@
 					<input id="password" type="password" name="password" /><br /><br />
 					<input type="submit" />
 				</form><br />
-				<span class="smol">GXa File Manager v0.1 BETA by Garet Halliday. <a href="https://github.com/garet90/gxa-file-manager">github</a></span>
+				<span class="smol">GXa File Manager v0.1 BETA by Garet Halliday. <a href="https://github.com/garet90/gxa-file-manager" target="_new">github</a></span>
 			</div>
 		</div>
 		<div class="center" id="errorbox">

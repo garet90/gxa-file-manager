@@ -69,9 +69,10 @@
 				<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
 				<div id="writeArea">
 					<textarea class="editorarea" name="data"><?php
-						echo file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file']);
+						echo str_replace(">","&gt;",str_replace("<","&lt;",file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file'])));
 					?></textarea>
 				</div>
+				</form>
 			</div>
 		</div>
 	</body>
