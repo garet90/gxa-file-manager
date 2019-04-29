@@ -1,2 +1,3 @@
-JQuery,
+JQuery javascript plugin,
+Tablesorter javascript plugin,
 "/admin/dashboard/img/linenumbers.png" by Aakash Chakravarthy

@@ -31,6 +31,7 @@
 			-webkit-box-shadow: none;
 			-moz-box-shadow: none;
 			box-shadow: none;
+            tab-size: 4;
 		}
 		.wrapper {
 			padding: 2px;
@@ -45,12 +46,13 @@
 			overflow: hidden;
 		}
 		.inner.top {
-			padding: 8px 4px 8px 4px;
+			padding: 8px;
 			font-weight: bold;
 			background-color: #e6EEEE;
 			color: black;
 			margin-bottom: 2px;
 			height: 8pt;
+            position: relative;
 		}
 		.button {
 			cursor: pointer;
@@ -69,9 +71,22 @@
 			padding: 0;
 		}
 		#locIndicator {
-			font-size: 12px;
-			margin: 5px 0px;
+			font-size: 8pt;
+			margin: 3px 0px;
+            color: #3D3D3D;
 		}
+        .title {
+            position: absolute;
+            top: 0;
+            margin: 0;
+            padding: 8px 0;
+            left: 50%;
+            text-align: center;
+            width: 200px;
+            margin-left: -100px;
+            font-weight: normal;
+            font-size: 8pt;
+        }
 		</style>
 	</head>
 	
@@ -79,6 +94,7 @@
 		<div class="wrapper">
 			<div class="inner top">
 				<div class="button" onclick='window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>"; top.inload("start");'>Back</div>
+                <p class="title"><?php echo $_GET['file']; ?></p>
 				<form method="post" action="save.php">
 					<input type="submit" class="button" value="Save" onclick="top.inload('start')" />
 			</div>
@@ -86,8 +102,8 @@
 				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 				<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
 				<div id="writeArea">
-					<textarea class="editorarea" name="data" onkeyup="getLineNumberAndColumnIndex(this);" onmouseup="this.onkeyup();"><?php
-						echo str_replace(">","&gt;",str_replace("<","&lt;",file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file'])));
+					<textarea class="editorarea" id="data" name="data" onkeyup="getLineNumberAndColumnIndex(this);" onmouseup="this.onkeyup();" spellcheck="false"><?php
+						echo str_replace("<","&" . "lt;",str_replace(">","&" . "gt;",file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file'])));
 					?></textarea>
 				</div>
 				</form>
@@ -101,6 +117,18 @@
 				var currentColumnIndex = textLines[textLines.length-1].length;
 				document.getElementById("locIndicator").innerHTML = "Line " + currentLineNumber + ", Column " + currentColumnIndex;
 			}
+            var textareas = document.getElementsByTagName('textarea');
+            var count = textareas.length;
+            for(var i=0;i<count;i++){
+                textareas[i].onkeydown = function(e){
+                    if(e.keyCode==9 || e.which==9){
+                        e.preventDefault();
+                        var s = this.selectionStart;
+                        this.value = this.value.substring(0,this.selectionStart) + "    " + this.value.substring(this.selectionEnd);
+                        this.selectionEnd = s+4; 
+                    }
+                }
+            }
 		</script>
 	</body>
 </html>
