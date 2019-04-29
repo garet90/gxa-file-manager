@@ -338,7 +338,7 @@
 									$fileicon = '<span class="filesn">2</span><i class="fa fa-file-image-o" aria-hidden="true"></i>';
 								} else if ($extension == "txt") {
 									$fileicon = '<span class="filesn">3</span><i class="fa fa-file-text-o" aria-hidden="true"></i>';
-								} else if ($extension == "php" || $extension == "html" || $extension == "xml") {
+								} else if ($extension == "php" || $extension == "html" || $extension == "xml" || $extension == "js" || $extension == "css") {
 									$fileicon = '<span class="filesn">4</span><i class="fa fa-file-code-o" aria-hidden="true"></i>';
 								} else if ($extension == "wav" || $extension == "mp3") {
 									$fileicon = '<span class="filesn">5</span><i class="fa fa-file-audio-o" aria-hidden="true"></i>';

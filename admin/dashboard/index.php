@@ -1,4 +1,9 @@
-<?php require 'auth.php' ?>
+<?php
+require 'auth.php';
+if ($usesqli) {
+	$sqlilink = mysqli_connect("127.0.0.1", $mysqluser, $mysqlpassword, $mysqldatabase);
+}
+?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -33,7 +38,7 @@
 				padding: 10px;
 				overflow-y: hidden;
 			}
-			iframe.explorer {
+			#explorer {
 				width: 100%;
 				height: 100%;
 				border: 0;
@@ -88,7 +93,7 @@
 			</div>
 		</div>
 		<div class="rightbox">
-			<iframe src="explorer.php?loc=/" class="explorer"></iframe>
+			<iframe src="about:blank" id="explorer"></iframe>
 			<div id="loadbox" class="leftbox">
 				<div class="leftboxinner load">
 					<i class="fa fa-spinner fa-pulse fa-fw"></i>
@@ -103,12 +108,16 @@
 				echo 'Server Status: Online<br />';
 				echo 'Server Time: ' . date('d/m/Y, H:i:s') . '<br />';
 				echo 'PHP Version: ' . phpversion() . '<br />';
+				if ($usesqli) {
+					echo 'MySQL Version: ' . mysqli_get_server_info($sqlilink) . '<br />';
+				}
 				echo '<br />https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 				?>
 			</div>
 		</div>
 		<script type="text/javascript">
-			var loadBox = document.getElementById("loadbox");
+			var loadBox = document.getElementById("loadbox"),
+			    explorer = document.getElementById("explorer");
 			function inload(x) {
 				if (x == "stop") {
 					loadBox.style.display = "none";
@@ -117,6 +126,7 @@
 					loadBox.style.display = "block";
 				}
 			}
+			explorer.src = "explorer.php?loc=/";
 		</script>
 	</body>
 </html>

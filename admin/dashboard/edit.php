@@ -10,13 +10,27 @@
 			padding: 1px;
 		}
 		.editorarea {
-			border: 0;
 			resize: none;
-			height: 70vh;
+			height: 80vh;
 			width: 100%;
-			margin-left: -1px;
-			margin-top: -1px;
-			margin-bottom: -3px;
+			margin-bottom: -2px;
+			white-space: nowrap;
+			overflow: auto;
+			background: url(img/linenumbers.png);
+			background-attachment: local;
+			background-repeat: no-repeat;
+			padding-left: 35px;
+			padding-top: 10px;
+			line-height: 16px;
+			box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			-webkit-box-sizing: border-box;
+			border: none;
+			overflow: auto;
+			outline: none;
+			-webkit-box-shadow: none;
+			-moz-box-shadow: none;
+			box-shadow: none;
 		}
 		.wrapper {
 			padding: 2px;
@@ -54,6 +68,10 @@
 			text-align: right;
 			padding: 0;
 		}
+		#locIndicator {
+			font-size: 12px;
+			margin: 5px 0px;
+		}
 		</style>
 	</head>
 	
@@ -68,12 +86,21 @@
 				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 				<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
 				<div id="writeArea">
-					<textarea class="editorarea" name="data"><?php
+					<textarea class="editorarea" name="data" onkeyup="getLineNumberAndColumnIndex(this);" onmouseup="this.onkeyup();"><?php
 						echo str_replace(">","&gt;",str_replace("<","&lt;",file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file'])));
 					?></textarea>
 				</div>
 				</form>
 			</div>
 		</div>
+		<p id="locIndicator">Line #, Column #</p>
+		<script type="text/javascript">
+			function getLineNumberAndColumnIndex(textarea){
+				var textLines = textarea.value.substr(0, textarea.selectionStart).split("\n");
+				var currentLineNumber = textLines.length;
+				var currentColumnIndex = textLines[textLines.length-1].length;
+				document.getElementById("locIndicator").innerHTML = "Line " + currentLineNumber + ", Column " + currentColumnIndex;
+			}
+		</script>
 	</body>
 </html>
