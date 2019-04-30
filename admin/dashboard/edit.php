@@ -1,5 +1,13 @@
 <?php
 	require 'auth.php';
+    $filecontents = file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file']);
+    function formatBytes($size, $precision = 2)
+    {
+        $base = log($size, 1024);
+        $suffixes = array('B', 'KB', 'MB', 'GB', 'TB');   
+
+        return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+    } 
 ?>
 <!DOCTYPE html>
 <html>
@@ -87,6 +95,10 @@
             font-weight: normal;
             font-size: 8pt;
         }
+        .bottext {
+            font-size: 8pt;
+            color: #3D3D3D;
+        }
 		</style>
 	</head>
 	
@@ -103,13 +115,29 @@
 				<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
 				<div id="writeArea">
 					<textarea class="editorarea" id="data" name="data" onkeyup="getLineNumberAndColumnIndex(this);" onmouseup="this.onkeyup();" spellcheck="false"><?php
-						echo str_replace("<","&" . "lt;",str_replace(">","&" . "gt;",file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file'])));
+						echo str_replace("<","&" . "lt;",str_replace(">","&" . "gt;",$filecontents));
 					?></textarea>
 				</div>
 				</form>
 			</div>
 		</div>
 		<p id="locIndicator">Line #, Column #</p>
+        <?php
+		$explodedURL = explode('/', substr($_GET['loc'],1));
+		$prevURLstring = "/";
+		foreach ($explodedURL as $key=>$URL) {
+			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "' onclick=" . '"' . "top.inload('start')" . '">' . $URL . "</a>";
+			$prevURLstring = $prevURLstring . $URL . '/';
+			$prevURLstring = preg_replace('/(\/+)/','/',$prevURLstring);
+		}
+		$joinedURL = join('/', $explodedURL);
+        if ($_GET['loc'] == "/") {
+            $joinedURL = '';
+        } else {
+            $joinedURL = $joinedURL . '/';
+        }
+        ?>
+        <p class="bottext"><a href="explorer.php?loc=/" onclick="top.inload('start')">root</a>/<?php echo $joinedURL . $_GET['file'] . ' - ' . number_format(strlen($filecontents)) . ' characters, ' . number_format(substr_count( $filecontents, "\n" )+1) . ' lines, taking up ' . formatBytes(strlen($filecontents)); ?></p>
 		<script type="text/javascript">
 			function getLineNumberAndColumnIndex(textarea){
 				var textLines = textarea.value.substr(0, textarea.selectionStart).split("\n");

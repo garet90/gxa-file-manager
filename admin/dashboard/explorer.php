@@ -1,4 +1,13 @@
-<?php require 'auth.php' ?>
+<?php
+require 'auth.php';
+function formatBytes($size, $precision = 2)
+{
+    $base = log($size, 1024);
+    $suffixes = array('B', 'KB', 'MB', 'GB', 'TB');   
+
+    return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+} 
+?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -125,7 +134,7 @@
 				background-image: url(desc.gif);
 			}
 			table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
-			background-color: #8dbdd8;
+			    background-color: #8dbdd8;
 			}
 			.sortable {
 				cursor: pointer;
@@ -315,21 +324,8 @@
 							}
 							echo $filename;
 						} else {
-							$filesize = filesize('../../' . $_GET['loc'] . '/' . $file);
-							$filesizeSort = $filesize;
-							if ($filesize > 1024) {
-								if (($filesize / 1024) > 1024) {
-									if ((($filesize / 1024) / 1024) > 1024) {
-										$filesize = round(((($filesize / 1024) / 1024) / 1024),2) . ' GB';
-									} else {
-										$filesize = round((($filesize / 1024) / 1024),2) . ' MB';
-									}
-								} else {
-									$filesize = round(($filesize / 1024),2) . ' kB';
-								}
-							} else {
-								$filesize = $filesize . ' B';
-							}
+							$filesizeSort = filesize('../../' . $_GET['loc'] . '/' . $file);
+							$filesize = formatBytes($filesizeSort);
 							$filedate = date ("m/d/Y, H:i:s", filemtime('../../' . $_GET['loc'] . '/' . $file));
 							$filesplit = explode('.', $file);
 							if (count ($filesplit) > 1) {
@@ -391,19 +387,7 @@
 			<a class="noselect" href="javascript:copyFile();" id="copyLink"><i class="fa fa-files-o" aria-hidden="true"></i><span class="littleIndent">Copy</span></a>
 		</div><br /><br />
 		<?php
-		if ($folderStorage > 1024) {
-			if (($folderStorage / 1024) > 1024) {
-				if ((($folderStorage / 1024) / 1024) > 1024) {
-					$folderStorage = round(((($folderStorage / 1024) / 1024) / 1024),2) . ' gigabytes';
-				} else {
-					$folderStorage = round((($folderStorage / 1024) / 1024),2) . ' megabytes';
-				}
-			} else {
-				$folderStorage = round(($folderStorage / 1024),2) . ' kilobytes';
-			}
-		} else {
-			$folderStorage = $folderStorage . ' bytes';
-		}
+		$folderStorage = formatBytes($folderStorage);
 		
 		$explodedURL = explode('/', $_GET['loc']);
 		$prevURLstring = "/";

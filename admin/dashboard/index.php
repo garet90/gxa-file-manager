@@ -3,6 +3,13 @@ require 'auth.php';
 if ($usesqli) {
 	$sqlilink = mysqli_connect("127.0.0.1", $mysqluser, $mysqlpassword, $mysqldatabase);
 }
+function formatBytes($size, $precision = 2)
+{
+    $base = log($size, 1024);
+    $suffixes = array('B', 'KB', 'MB', 'GB', 'TB');   
+
+    return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+} 
 ?>
 <!DOCTYPE html>
 <html>
@@ -109,8 +116,14 @@ if ($usesqli) {
 				echo 'Server Time: ' . date('d/m/Y, H:i:s') . '<br />';
 				echo 'PHP Version: ' . phpversion() . '<br />';
 				if ($usesqli) {
-					echo 'MySQL Version: ' . mysqli_get_server_info($sqlilink) . '<br />';
+					echo 'Server MySQL Info: ' . mysqli_get_server_info($sqlilink) . '<br />';
 				}
+                echo 'Server IP Address: ' . $_SERVER["REMOTE_ADDR"] . '<br />';
+                echo 'Server Port: ' . $_SERVER["SERVER_PORT"] . '<br />';
+                echo 'Server Software: ' . $_SERVER["SERVER_SOFTWARE"] . '<br />';
+                echo 'HTTPS: ' . $_SERVER["HTTPS"] . '<br />';
+                echo '<br /><progress value="' . disk_free_space('/') . '" max="' .  disk_total_space('/') . '"></progress><br />';
+                echo formatBytes(disk_free_space('/')) . ' of ' . formatBytes(disk_total_space('/')) . ' (' . round((disk_free_space('/') / disk_total_space('/')),4)*100 . '%) available on ' . GetEnv("SystemDrive") . '<br />';
 				echo '<br />https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 				?>
 			</div>
