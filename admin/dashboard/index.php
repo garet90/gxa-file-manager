@@ -1,7 +1,7 @@
 <?php
 require 'auth.php';
-if ($usesqli) {
-	$sqlilink = mysqli_connect("127.0.0.1", $mysqluser, $mysqlpassword, $mysqldatabase);
+if ($usemysql) {
+	$sqlilink = mysqli_connect($mysqlip, $mysqluser, $mysqlpassword, $mysqldatabase);
 }
 function formatBytes($size, $precision = 2)
 {
@@ -115,7 +115,7 @@ function formatBytes($size, $precision = 2)
 				echo 'Server Status: Online<br />';
 				echo 'Server Time: ' . date('d/m/Y, H:i:s') . '<br />';
 				echo 'PHP Version: ' . phpversion() . '<br />';
-				if ($usesqli) {
+				if ($usemysql) {
 					echo 'Server MySQL Info: ' . mysqli_get_server_info($sqlilink) . '<br />';
 				}
                 echo 'Server IP Address: ' . $_SERVER["REMOTE_ADDR"] . '<br />';

@@ -118,5 +118,17 @@
 				<div class="errorbutton" onclick="this.parentElement.parentElement.style.display = 'none';">OK</div>
 			</div>
 		</div>
+        <script type="text/javascript">
+        function inIframe () {
+            try {
+                return window.self !== window.top;
+            } catch (e) {
+                return true;
+            }
+        }
+        if (inIframe()) {
+            top.window.location = window.location;
+        }
+        </script>
 	</body>
 </html>
