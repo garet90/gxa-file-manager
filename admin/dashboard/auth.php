@@ -25,6 +25,12 @@
                 die();
             }
         }
+        if (mysqli_connect_errno()) {
+            $errors = 'There was an error communicating with the SQL database: ' . mysqli_error();
+            header('Location: ../index.php?errors=' . $errors);
+            mysqli_close($sqlilink);
+            die();
+        }
         mysqli_close($sqlilink);
     } else {
     	if (isset($_COOKIE['user']) && isset($_COOKIE['password'])) {

@@ -150,6 +150,7 @@ function formatBytes($size, $precision = 2)
 			.locview {
 				font-size: 8pt;
 				color: #3D3D3D;
+                margin: 10px 0;
 			}
 			.textinput {
 				margin-bottom: 50px;
@@ -385,7 +386,7 @@ function formatBytes($size, $precision = 2)
 		</div>
 		<div class="botText">
 			<a class="noselect" href="javascript:copyFile();" id="copyLink"><i class="fa fa-files-o" aria-hidden="true"></i><span class="littleIndent">Copy</span></a>
-		</div><br /><br />
+		</div>
 		<?php
 		$folderStorage = formatBytes($folderStorage);
 		

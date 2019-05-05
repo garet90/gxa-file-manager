@@ -2,11 +2,6 @@
 	require 'config.php';
     if ($usemysql) {
         $sqlilink = mysqli_connect($mysqlip, $mysqluser, $mysqlpassword, $mysqldatabase);
-        if (mysqli_connect_errno()) {
-            $errors = 'There was an error connecting with the SQL database: ' . mysqli_error();
-            header('Location: index.php?errors=' . $errors);
-            die();
-        }
         $tablecheck = mysqli_query($sqlilink,"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'settings'");
         if (mysqli_num_rows($tablecheck) == 0) {
             mysqli_query($sqlilink,"CREATE TABLE `gxa-panel`.`settings` ( `ID` INT NOT NULL AUTO_INCREMENT , `name` TEXT NOT NULL , `value` TEXT NOT NULL , PRIMARY KEY (`ID`)) ENGINE = InnoDB; ");
@@ -30,6 +25,12 @@
                 mysqli_close($sqlilink);
                 die();
             }
+        }
+        if (mysqli_connect_errno()) {
+            $errors = 'There was an error communicating with the SQL database: ' . mysqli_error();
+            header('Location: index.php?errors=' . $errors);
+            mysqli_close($sqlilink);
+            die();
         }
     	echo "Login successful. Redirecting...";
     	setcookie("user", $_POST["user"], 0, "/", $_SERVER['HTTP_HOST'], 1);
