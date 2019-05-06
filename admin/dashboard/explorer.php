@@ -6,7 +6,7 @@ function formatBytes($size, $precision = 2)
     $suffixes = array('B', 'KB', 'MB', 'GB', 'TB');   
 
     return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
-} 
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -447,7 +447,7 @@ function formatBytes($size, $precision = 2)
                         filesp = selectedFiles[0].split(':'),
                         filedir = filesp[1].split('/'),
                         popped = filedir.pop(),
-                        filedirectory = filedir.join('/'),
+                        filedirectory = filedir.join('/') + '/',
                         filename = filesplit[filesplit.length-1];
                     confirmDelete.style.display = "block";
                     itemdel.innerHTML = filename;
