@@ -57,17 +57,16 @@
         }
         .inner.top {
             padding: 8px;
-            font-weight: bold;
             background-color: #e6EEEE;
             color: black;
             margin-bottom: 2px;
-            height: 8pt;
+            height: 10px;
             position: relative;
         }
         .button {
             cursor: pointer;
-            font-size: 8pt;
-            font-weight: bold;
+            font-size: 10px;
+            font-weight: normal;
             margin-top: -1px;
         }
         div.button {
@@ -90,13 +89,14 @@
             position: absolute;
             top: 0;
             margin: 0;
-            padding: 7px 0;
+            padding: 8px 0;
             left: 50%;
             text-align: center;
             width: 200px;
             margin-left: -100px;
-            font-weight: normal;
-            font-size: 8pt;
+            font-weight: bold;
+            font-size: 10px;
+            margin-top: -1px;
         }
         .locview {
             font-size: 8pt;
