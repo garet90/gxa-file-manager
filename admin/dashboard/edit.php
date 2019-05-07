@@ -41,6 +41,8 @@
 			-moz-box-shadow: none;
 			box-shadow: none;
 			tab-size: 4;
+			-moz-tab-size: 4;
+			-o-tab-size: 4;
 			font-size: 12px;
 		}
 		.wrapper {
@@ -118,7 +120,7 @@
 				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 				<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
 				<div id="writeArea">
-					<textarea class="editorarea" id="data" name="data" onkeyup="getLineNumberAndColumnIndex(this);" onmouseup="this.onkeyup();" onscroll="changeNumberCol(this);" spellcheck="false"><?php
+					<textarea class="editorarea" id="data" name="data" onkeyup="setIndexIndicator(this);" onmouseup="this.onkeyup();" onscroll="changeNumberCol(this);" spellcheck="false"><?php
 						echo str_replace("<","&" . "lt;",str_replace(">","&" . "gt;",$filecontents));
 					?></textarea>
 				</div>
@@ -147,7 +149,11 @@
 				var textLines = textarea.value.substr(0, textarea.selectionStart).split("\n");
 				var currentLineNumber = textLines.length;
 				var currentColumnIndex = textLines[textLines.length-1].length;
-				document.getElementById("botText").innerHTML = "Line " + currentLineNumber + ", Column " + currentColumnIndex;
+				return [currentLineNumber,currentColumnIndex];
+			}
+			function setIndexIndicator(textarea){
+				var s = getLineNumberAndColumnIndex(textarea);
+				document.getElementById("botText").innerHTML = "Line " + s[0] + ", Column " + s[1];
 			}
 			var textareas = document.getElementsByTagName('textarea');
 			var count = textareas.length;
@@ -158,6 +164,20 @@
 						var s = this.selectionStart;
 						this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
 						this.selectionEnd = s+1; 
+					}
+					if(e.keyCode==13 || e.which==13){
+						if (<?php echo $useautotab; ?>) {
+							e.preventDefault();
+							var locIndex = getLineNumberAndColumnIndex(this),
+							tabCount = this.value.split("\n")[locIndex[0]-1].split("\t").length-1,
+							s = this.selectionStart,
+							tabStr = "";
+							for (i = 0; i < tabCount; i++) {
+								tabStr = tabStr + "\t";
+							}
+							this.value = this.value.substring(0,this.selectionStart) + "\n" + tabStr + this.value.substring(this.selectionEnd);
+							this.selectionEnd = s+1+tabCount; 
+						}
 					}
 				}
 			}
