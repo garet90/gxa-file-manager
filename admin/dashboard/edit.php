@@ -30,7 +30,6 @@
 			background-position: left top;
 			padding-left: 35px;
 			padding-top: 10px;
-			line-height: 16px;
 			box-sizing: border-box;
 			-moz-box-sizing: border-box;
 			-webkit-box-sizing: border-box;
@@ -44,6 +43,9 @@
 			-moz-tab-size: 4;
 			-o-tab-size: 4;
 			font-size: 12px;
+			line-height: 16px;
+			font-family: monospace;
+			text-size-adjust: none;
 		}
 		.wrapper {
 			padding: 2px;
@@ -137,38 +139,72 @@
 			$prevURLstring = preg_replace('/(\/+)/','/',$prevURLstring);
 		}
 		$joinedURL = join('/', $explodedURL);
-		if ($_GET['loc'] == "/") {
-			$joinedURL = '';
-		} else {
-			$joinedURL = $joinedURL . '/';
-		}
 		?>
 		<div class="locview"><a href="explorer.php?loc=/" onclick="top.inload('start')">root</a>/<?php echo $joinedURL . $_GET['file'] . ' - ' . number_format(strlen($filecontents)) . ' characters, ' . number_format(substr_count( $filecontents, "\n" )+1) . ' lines, taking up ' . formatBytes(strlen($filecontents)); ?></div>
 		<script type="text/javascript">
-			function getLineNumberAndColumnIndex(textarea){
-				var textLines = textarea.value.substr(0, textarea.selectionStart).split("\n");
+			function getLineNumberAndColumnIndex(textarea,selectLocation){
+				var textLines = textarea.value.substr(0, selectLocation).split("\n");
 				var currentLineNumber = textLines.length;
 				var currentColumnIndex = textLines[textLines.length-1].length;
 				return [currentLineNumber,currentColumnIndex];
 			}
 			function setIndexIndicator(textarea){
-				var s = getLineNumberAndColumnIndex(textarea);
-				document.getElementById("botText").innerHTML = "Line " + s[0] + ", Column " + s[1];
+				var s = getLineNumberAndColumnIndex(textarea, textarea.selectionStart),
+				se = getLineNumberAndColumnIndex(textarea, textarea.selectionEnd);
+				if (s[0] !== se[0] && s[1] !== se[1]) {
+					document.getElementById("botText").innerHTML = "Line " + s[0] + ", Column " + s[1] + " to Line " + se[0] + ", Column " + se[1];
+				} else {
+					document.getElementById("botText").innerHTML = "Line " + s[0] + ", Column " + s[1];
+				}
 			}
 			var textareas = document.getElementsByTagName('textarea');
 			var count = textareas.length;
+			var shifted = false;
+			document.onkeydown = function(e) {
+				if(e.keyCode==16 || e.which==16) { shifted = true; }
+			}
+			document.onkeyup = function(e) {
+				if(e.keyCode==16 || e.which==16) { shifted = false; }
+			}
 			for(var i=0;i<count;i++){
 				textareas[i].onkeydown = function(e){
 					if(e.keyCode==9 || e.which==9){
 						e.preventDefault();
-						var s = this.selectionStart;
-						this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
-						this.selectionEnd = s+1; 
+						var selectStartIndex = getLineNumberAndColumnIndex(this,this.selectionStart),
+						selectEndIndex = getLineNumberAndColumnIndex(this,this.selectionEnd);
+						if (selectStartIndex[0] == selectEndIndex[0]) {
+							var s = this.selectionStart;
+							this.value = this.value.substring(0,this.selectionStart) + "\t" + this.value.substring(this.selectionEnd);
+							this.selectionEnd = s+1;
+						} else {
+							var lines = this.value.split("\n"),
+							s = this.selectionStart,
+							se = this.selectionEnd;
+							sef = 0;
+							if (shifted) {
+								var td = 0;
+								for (i = selectStartIndex[0]-1; i < selectEndIndex[0]; i++) {
+									if (lines[i][0] == "\t") {
+										lines[i] = lines[i].substr(1,lines[i].length);
+										td = td + 1;
+									}
+								}
+								sef = se - td;
+							} else {
+								for (i = selectStartIndex[0]-1; i < selectEndIndex[0]; i++) {
+									lines[i] = "\t" + lines[i];
+								}
+								sef = (selectEndIndex[0] - selectStartIndex[0]) + se + 1;
+							}
+							this.value = lines.join("\n");
+							this.selectionStart = s;
+							this.selectionEnd = sef;
+						}
 					}
 					if(e.keyCode==13 || e.which==13){
 						if (<?php echo $useautotab; ?>) {
 							e.preventDefault();
-							var locIndex = getLineNumberAndColumnIndex(this),
+							var locIndex = getLineNumberAndColumnIndex(this, this.selectionStart),
 							tabCount = this.value.split("\n")[locIndex[0]-1].split("\t").length-1,
 							s = this.selectionStart,
 							tabStr = "";

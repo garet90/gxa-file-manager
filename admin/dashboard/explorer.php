@@ -220,6 +220,12 @@ function formatBytes($size, $precision = 2)
 			.errortext {
 				margin-bottom: 50px !important;
 			}
+			#moveFrame {
+				border: 0;
+				width: 100%;
+				height: 100px;
+				padding-bottom: 50px;
+			}
 		</style>
 		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
@@ -281,6 +287,17 @@ function formatBytes($size, $precision = 2)
 				<input type="text" id="newFileName" />
 				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'; window.renameToggle = 0;">Cancel</div>
 				<div class="delbut yes" onClick="confirmRename()">Rename</div>
+			</div>
+		</div>
+		<div class="center" id="moveItem">
+			<div class="boxinner first">
+				<p>Move file</p>
+			</div>
+			<div class="boxinner">
+				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
+				<iframe src="about:blank" id="moveFrame"></iframe>
+				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'; window.renameToggle = 0;">Cancel</div>
+				<div class="delbut yes" onClick="confirmMove()">Move Here</div>
 			</div>
 		</div>
 		<table id="filetable" class="tablesorter">
@@ -391,6 +408,9 @@ function formatBytes($size, $precision = 2)
 		</div>
 		<div class="botText">
 			<a class="noselect" href="javascript:copyFile();" id="copyLink"><i class="fa fa-files-o" aria-hidden="true"></i><span class="littleIndent">Copy</span></a>
+		</div>
+		<div class="botText">
+			<a class="noselect" href="javascript:moveFile();" id="moveLink"><i class="fa fa-arrows" aria-hidden="true"></i><span class="littleIndent">Move</span></a>
 		</div>
 		<?php
 		$folderStorage = formatBytes($folderStorage);
@@ -546,13 +566,16 @@ function formatBytes($size, $precision = 2)
 				var deleteLink = document.getElementById("deleteLink"),
 					renameLink = document.getElementById("renameLink"),
 					editLink = document.getElementById("editLink"),
-					copyLink = document.getElementById("copyLink");
+					copyLink = document.getElementById("copyLink"),
+					moveLink = document.getElementById("moveLink");
 				if (selectedFiles.length > 0) {
 					deleteLink.classList.remove("noselect");
 					copyLink.classList.remove("noselect");
+					moveLink.classList.remove("noselect");
 				} else {
 					deleteLink.classList.add("noselect");
 					copyLink.classList.add("noselect");
+					moveLink.classList.add("noselect");
 				}
 				if (selectedFiles.length == 1) {
 					var testSplit = selectedFiles[0].split(':');
@@ -638,6 +661,25 @@ function formatBytes($size, $precision = 2)
 					window.location = "copy.php?loc=<?php echo $_GET['loc'] ?>&files=" + selectedString;
 				} else {
 					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't copy nothing!";
+				}
+			}
+			function moveFile() {
+				if (selectedFiles.length > 0) {
+					var moveItem = document.getElementById("moveItem"),
+						moveFrame = document.getElementById("moveFrame");
+					moveItem.style.display = "block";
+					moveFrame.src = "directoryexplorer.php?loc=/";
+					top.inload('start');
+				}
+			}
+			function confirmMove() {
+				top.inload('start');
+				var moveFrame = document.getElementById("moveFrame"),
+					selectedString = selectedFiles.join(",");
+				if (selectedFiles.length > 0) {
+					window.location = "move.php?loc=<?php echo $_GET['loc'] ?>&moveto=" + moveFrame.contentWindow.document.getElementById("location").innerHTML + "&files=" + selectedString;
+				} else {
+					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't move nothing!";
 				}
 			}
 			function changeSelectStatus() {

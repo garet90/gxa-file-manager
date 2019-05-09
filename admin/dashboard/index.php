@@ -86,6 +86,7 @@ function formatBytes($size, $precision = 2)
 				height: 23px;
 				text-align: center;
 				font-size: 10pt;
+				margin-top: 0;
 			}
 		</style>
 		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">

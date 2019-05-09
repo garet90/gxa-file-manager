@@ -4,7 +4,7 @@
 	//       ACCOUNT / LOGIN SETTINGS       //
 	// ------------------------------------ //
 	
-	$usemysql = false;
+	$usemysql = true;
 	// Turning this on will allow the use of a MySQL database to hold login information, settings, etc. It will also enable multiple usually disabled features.
 	// This may become required in the future.
 
