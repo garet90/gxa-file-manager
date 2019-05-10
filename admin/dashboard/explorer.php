@@ -23,34 +23,35 @@ function formatBytes($size, $precision = 2)
 			.center {
 				padding: 2px;
 				background-color: #CDCDCD;
-				margin-bottom: 10px;
 				word-break: break-all;
 				width: 300px;
-				position: absolute;
+				position: fixed;
 				left: 50%;
 				top: 50%;
-				margin-left: -150px;
-				margin-top: -150px;
-				display: none;
-				position: fixed;
 				-webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
 				-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
 				box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				top: 50%;
+				transform: translateY(-50%) translateX(-50%);
+				display: none;
+				max-height: 100vh;
+				overflow-y: auto;
+				overflow-x: hidden;
 			}
 			.boxinner {
 				background-color: white;
 				border: 1px solid white;
 				font-size: 8pt;
-				padding: 8px 12px;
+				padding: 8px 15px;
 				font-family: Sans-serif;
 				color: #3D3D3D;
 				min-height: 35px;
+				position: relative;
 			}
 			.boxinner.first {
 				font-weight: bold;
 				background-color: #e6EEEE;
 				color: black;
-				height: 8pt;
 				margin-bottom: 2px;
 				min-height: 0;
 			}
@@ -182,7 +183,6 @@ function formatBytes($size, $precision = 2)
 				display: none;
 			}
 			#errorbox {
-				position: fixed;
 				display: <?php
 					if (isset($_GET['errors'])) {
 						echo "block";
@@ -190,9 +190,6 @@ function formatBytes($size, $precision = 2)
 						echo "none";
 					}
 				?>;
-				-webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
-				-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
-				box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
 			}
 			.errorbutton {
 				clear: both;
@@ -219,14 +216,19 @@ function formatBytes($size, $precision = 2)
 			}
 			.errortext {
 				margin-bottom: 50px !important;
+				word-break: normal;
 			}
 			#moveFrame {
 				border: 0;
 				width: 100%;
-				height: 100px;
 				padding-bottom: 50px;
 			}
 		</style>
+		<script>
+			function resizeIframe(obj) {
+				obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+			}
+		</script>
 		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
 	<body onLoad="top.inload('stop')">
@@ -262,7 +264,7 @@ function formatBytes($size, $precision = 2)
 				<form method="post" action="upload.php" enctype="multipart/form-data">
 					<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 					<input type="file" id="fileBox" name="file" />
-					<div class="delbut no" onClick="this.parentElement.parentElement.parentElement.style.display = 'none'; window.uploadToggle = 0;">Cancel</div>
+					<div class="delbut no" onClick="this.parentElement.parentElement.parentElement.style.display = 'none';">Cancel</div>
 					<input type="submit" onClick="top.inload('start')" value="Upload" class="delbut yes" />
 				</form>
 			</div>
@@ -273,30 +275,30 @@ function formatBytes($size, $precision = 2)
 			</div>
 			<div class="boxinner">
 				<p class="errortext">Copies will be named "copy.[original file name]".</p>
-				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'; window.copyToggle = 0;">Cancel</div>
+				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none';">Cancel</div>
 				<div class="delbut yes" onClick="copyConfirmed();">Copy</div>
 			</div>
 		</div>
 		<div class="center" id="renameItem">
 			<div class="boxinner first">
-				<p>Rename file</p>
+				<p>Rename <span id="itemrename">file</span>?</p>
 			</div>
 			<div class="boxinner">
 				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 				<label for="newFileName">New file name</label><br />
 				<input type="text" id="newFileName" />
-				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'; window.renameToggle = 0;">Cancel</div>
+				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none';">Cancel</div>
 				<div class="delbut yes" onClick="confirmRename()">Rename</div>
 			</div>
 		</div>
 		<div class="center" id="moveItem">
 			<div class="boxinner first">
-				<p>Move file</p>
+				<p>Move <span id="itemmove">file</span>?</p>
 			</div>
 			<div class="boxinner">
 				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
-				<iframe src="about:blank" id="moveFrame"></iframe>
-				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'; window.renameToggle = 0;">Cancel</div>
+				<iframe src="about:blank" scrolling="no" frameborder="0" id="moveFrame" onload="resizeIframe(this)"></iframe>
+				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none';">Cancel</div>
 				<div class="delbut yes" onClick="confirmMove()">Move Here</div>
 			</div>
 		</div>
@@ -446,7 +448,11 @@ function formatBytes($size, $precision = 2)
 			//verifyJS
 			document.getElementById("verifyJS").innerHTML = "true";
 			//code
-			var create = false;
+			var loc = "<?php echo $_GET['loc']; ?>",
+				create = false;
+			
+			// Create
+			
 			function createItem() {
 				var createMenu = document.getElementById("createMenu");
 				if (create) {
@@ -457,36 +463,38 @@ function formatBytes($size, $precision = 2)
 					create = true;
 				}
 			}
-			var delLoc = "";
+			
+			// Delete
+			
 			function deleteConf() {
-				var confirmDelete = document.getElementById("confirmDelete"),
-					itemdel = document.getElementById('itemdel'),
-					delYes = document.getElementById('delYes');
-				if (selectedFiles.length == 1) {
-					var filesplit = selectedFiles[0].split('/'),
-						filesp = selectedFiles[0].split(':'),
-						filedir = filesp[1].split('/'),
-						popped = filedir.pop(),
-						filedirectory = filedir.join('/') + '/',
-						filename = filesplit[filesplit.length-1];
-					confirmDelete.style.display = "block";
-					itemdel.innerHTML = filename;
-					
-					delLoc = filedirectory;
-				} else if (selectedFiles.length > 1) {
-					delLoc = "<?php echo $_GET['loc'] ?>";
-					confirmDelete.style.display = "block";
-					itemdel.innerHTML = selectedFiles.length + " items";
-				}
+				var confirmDelete = document.getElementById("confirmDelete");
+				if (confirmDelete.style.display !== "block") {
+					if (selectedFiles.length > 0) {
+						var itemdel = document.getElementById('itemdel');
+						confirmDelete.style.display = "block";
+						if (selectedFiles.length == 1) {
+							var filesplit = selectedFiles[0].split('/'),
+								filename = filesplit[filesplit.length-1];
+							itemdel.innerHTML = '"' + filename + '"';
+						} else if (selectedFiles.length > 1) {
+							itemdel.innerHTML = selectedFiles.length + " items";
+						}
+					}
+				} else {
+					confirmDelete.style.display = "none";
+				} 
 			}
 			function deleteConfirmed() {
 				top.inload('start');
 				if (selectedFiles.length > 0) {
-					window.location = "delete.php?loc=" + delLoc + "&files=" + selectedFiles.join(',');
+					window.location = "delete.php?loc=" + loc + "&files=" + selectedFiles.join(',');
 				} else {
-					window.location = "explorer.php?loc=<?php echo $_GET['loc']; ?>&errors=You can't delete nothing!";
+					window.location = "explorer.php?loc=" + loc + "&errors=You can't delete nothing!";
 				}
 			}
+			
+			// Toggle
+			
 			function toggleAll(accord) {
 				var array = document.getElementsByClassName("fileInput");
 				
@@ -537,18 +545,9 @@ function formatBytes($size, $precision = 2)
 					}
 				},1);
 			}
-			uploadToggle = 0;
-			function uploadItem() {
-				var uploadScreen = document.getElementById('uploadItem');
-				
-				if (uploadToggle == 0) {
-					uploadScreen.style.display = "block";
-					uploadToggle = 1;
-				} else {
-					uploadScreen.style.display = "none";
-					uploadToggle = 0;
-				}
-			}
+			
+			// Select
+			
 			var selectedFiles = [];
 			function selectFile(x,y) {
 				changeSelectStatus();
@@ -600,88 +599,6 @@ function formatBytes($size, $precision = 2)
 			 
 			    return false;
 			}
-			function editFile() {
-				if (selectedFiles.length == 1) {
-					var testSplit = selectedFiles[0].split(':');
-					if (testSplit[0] == "file") {
-						var fileSplit = selectedFiles[0].split('/'),
-							fileName = fileSplit.pop();
-						window.location = "edit.php?loc=<?php echo $_GET['loc']; ?>&file=" + fileName;
-						top.inload('start');
-					}
-				}
-			}
-			renameToggle = 0;
-			function renameFile() {
-				if (selectedFiles.length == 1) {
-					var renameItem = document.getElementById("renameItem");
-					if (renameToggle == 0) {
-						renameToggle = 1;
-						renameItem.style.display = "block";
-					} else {
-						renameToggle = 0;
-						renameItem.style.display = "none";
-					}
-				}
-			}
-			function confirmRename() {
-				top.inload('start');
-				if (selectedFiles.length == 1) {
-					var newFileName = document.getElementById("newFileName").value;
-					window.location = "rename.php?file=" + selectedFiles[0] + "&loc=<?php echo $_GET['loc'] ?>&newname=" + newFileName;
-				} else {
-					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't rename " + selectedFiles.length + " files!";
-				}
-			}
-			var copyToggle = 0;
-			function copyFile() {
-				if (selectedFiles.length > 0) {
-					var copyItem = document.getElementById("copyItem");
-					if (copyToggle == 0) {
-						copyItem.style.display = "block";
-						copyToggle = 1;
-						var itemCopy = document.getElementById("itemcopy");
-						if (selectedFiles.length == 1) {
-							var filesplit = selectedFiles[0].split('/'),
-								filename = filesplit[filesplit.length-1];
-							itemCopy.innerHTML = filename;
-						} else if (selectedFiles.length > 1) {
-							itemCopy.innerHTML = selectedFiles.length + " items";
-						}
-					} else {
-						copyItem.style.display = "none";
-						copyToggle = 0;
-					}
-				}
-			}
-			function copyConfirmed() {
-				top.inload('start');
-				if (selectedFiles.length > 0) {
-					var selectedString = selectedFiles.join(",");
-					window.location = "copy.php?loc=<?php echo $_GET['loc'] ?>&files=" + selectedString;
-				} else {
-					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't copy nothing!";
-				}
-			}
-			function moveFile() {
-				if (selectedFiles.length > 0) {
-					var moveItem = document.getElementById("moveItem"),
-						moveFrame = document.getElementById("moveFrame");
-					moveItem.style.display = "block";
-					moveFrame.src = "directoryexplorer.php?loc=/";
-					top.inload('start');
-				}
-			}
-			function confirmMove() {
-				top.inload('start');
-				var moveFrame = document.getElementById("moveFrame"),
-					selectedString = selectedFiles.join(",");
-				if (selectedFiles.length > 0) {
-					window.location = "move.php?loc=<?php echo $_GET['loc'] ?>&moveto=" + moveFrame.contentWindow.document.getElementById("location").innerHTML + "&files=" + selectedString;
-				} else {
-					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't move nothing!";
-				}
-			}
 			function changeSelectStatus() {
 				var fileInput = document.getElementsByClassName("fileInput"),
 					arrchecked = false,
@@ -705,6 +622,121 @@ function formatBytes($size, $precision = 2)
 					toggleAllCheck.checked = false;
 				}
 				return arrchecked + ":" + arrunchecked;
+			}
+			
+			// Upload
+			
+			function uploadItem() {
+				var uploadScreen = document.getElementById('uploadItem');
+				if (uploadScreen.style.display !== "block") {
+					uploadScreen.style.display = "block";
+				} else {
+					uploadScreen.style.display = "none";
+				}
+			}
+			
+			// Edit
+			
+			function editFile() {
+				if (selectedFiles.length == 1) {
+					var testSplit = selectedFiles[0].split(':');
+					if (testSplit[0] == "file") {
+						var fileSplit = selectedFiles[0].split('/'),
+							fileName = fileSplit.pop();
+						window.location = "edit.php?loc=<?php echo $_GET['loc']; ?>&file=" + fileName;
+						top.inload('start');
+					}
+				}
+			}
+			
+			// Rename
+			
+			function renameFile() {
+				if (selectedFiles.length == 1) {
+					var renameItem = document.getElementById("renameItem"),
+						itemrename = document.getElementById("itemrename");
+					if (renameItem.style.display !== "block") {
+						var filesplit = selectedFiles[0].split('/'),
+							filename = filesplit[filesplit.length-1];
+						renameItem.style.display = "block";
+						itemrename.innerHTML = '"' + filename + '"';
+					} else {
+						renameItem.style.display = "none";
+					}
+				}
+			}
+			function confirmRename() {
+				top.inload('start');
+				if (selectedFiles.length == 1) {
+					var newFileName = document.getElementById("newFileName").value;
+					window.location = "rename.php?file=" + selectedFiles[0] + "&loc=<?php echo $_GET['loc'] ?>&newname=" + newFileName;
+				} else {
+					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't rename " + selectedFiles.length + " files!";
+				}
+			}
+			
+			// Copy
+			
+			function copyFile() {
+				if (selectedFiles.length > 0) {
+					var copyItem = document.getElementById("copyItem");
+					if (copyItem.style.display !== "block") {
+						copyItem.style.display = "block";
+						var itemCopy = document.getElementById("itemcopy");
+						if (selectedFiles.length == 1) {
+							var filesplit = selectedFiles[0].split('/'),
+								filename = filesplit[filesplit.length-1];
+							itemCopy.innerHTML = '"' + filename + '"';
+						} else if (selectedFiles.length > 1) {
+							itemCopy.innerHTML = selectedFiles.length + " items";
+						}
+					} else {
+						copyItem.style.display = "none";
+					}
+				}
+			}
+			function copyConfirmed() {
+				top.inload('start');
+				if (selectedFiles.length > 0) {
+					var selectedString = selectedFiles.join(",");
+					window.location = "copy.php?loc=<?php echo $_GET['loc'] ?>&files=" + selectedString;
+				} else {
+					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't copy nothing!";
+				}
+			}
+			
+			// Move
+			
+			function moveFile() {
+				var moveItem = document.getElementById("moveItem");
+				if (moveItem.style.display !== "block") {
+					if (selectedFiles.length > 0) {
+						var moveFrame = document.getElementById("moveFrame"),
+							itemmove = document.getElementById("itemmove");
+						moveItem.style.display = "block";
+						moveFrame.src = "directoryexplorer.php?loc=/";
+						top.inload('start');
+						if (selectedFiles.length == 1) {
+							var filesplit = selectedFiles[0].split('/'),
+								filename = filesplit[filesplit.length-1];
+							itemmove.innerHTML = '"' + filename + '"';
+						} else {
+							itemmove.innerHTML = selectedFiles.length + " items";
+						}
+					}
+				} else {
+					moveItem.style.display = "none";
+				}
+			}
+			function confirmMove() {
+				top.inload('start');
+				var moveFrame = document.getElementById("moveFrame"),
+					selectedString = selectedFiles.join(",");
+				if (selectedFiles.length > 0) {
+					window.location = "move.php?loc=<?php echo $_GET['loc'] ?>&moveto=" + moveFrame.contentWindow.document.getElementById("location").innerHTML + "&files=" + selectedString;
+				} else {
+					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't move nothing!";
+				}
 			}
 		</script>
 		<script type="text/javascript">

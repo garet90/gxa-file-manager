@@ -14,14 +14,17 @@
 			.center {
 				padding: 2px;
 				background-color: #CDCDCD;
-				margin-bottom: 10px;
 				word-break: break-all;
 				width: 400px;
-				position: absolute;
+				position: fixed;
 				left: 50%;
 				top: 50%;
-				margin-left: -200px;
-				margin-top: -150px;
+				transform: translateY(-50%) translateX(-50%);
+				-webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				max-height: 100vh;
+				overflow-y: auto;
 			}
 			.boxinner {
 				background-color: white;
@@ -30,6 +33,7 @@
 				padding: 8px 4px 8px 4px;
 				font-family: Sans-serif;
 				color: #3D3D3D;
+				position: relative;
 			}
 			.boxinner.first {
 				font-weight: bold;
@@ -48,7 +52,6 @@
 				text-align: center;
 			}
 			#errorbox {
-				position: fixed;
 				display: <?php
 					if (isset($_GET['errors'])) {
 						echo "block";
@@ -56,9 +59,7 @@
 						echo "none";
 					}
 				?>;
-				-webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
-				-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
-				box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+				width: 300px;
 			}
 			.errorbutton {
 				clear: both;
@@ -85,6 +86,7 @@
 			}
 			.errortext {
 				margin-bottom: 50px !important;
+				word-break: normal;
 			}
 		</style>
 	</head>
