@@ -284,7 +284,6 @@ function formatBytes($size, $precision = 2)
 				<p>Rename <span id="itemrename">file</span>?</p>
 			</div>
 			<div class="boxinner">
-				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 				<label for="newFileName">New file name</label><br />
 				<input type="text" id="newFileName" />
 				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none';">Cancel</div>
@@ -296,7 +295,6 @@ function formatBytes($size, $precision = 2)
 				<p>Move <span id="itemmove">file</span>?</p>
 			</div>
 			<div class="boxinner">
-				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 				<iframe src="about:blank" scrolling="no" frameborder="0" id="moveFrame" onload="resizeIframe(this)"></iframe>
 				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none';">Cancel</div>
 				<div class="delbut yes" onClick="confirmMove()">Move Here</div>
@@ -400,6 +398,9 @@ function formatBytes($size, $precision = 2)
 			<a href="javascript:uploadItem();"><i class="fa fa-upload" aria-hidden="true"></i><span class="littleIndent">Upload</span></a>
 		</div>
 		<div class="botText">
+			<a href="javascript:downloadItem();" id="downloadLink" class="noselect"><i class="fa fa-download" aria-hidden="true"></i><span class="littleIndent">Download</span></a>
+		</div>
+		<div class="botText">
 			<a href="javascript:deleteConf();" id="deleteLink" class="noselect"><i class="fa fa-trash-o" aria-hidden="true"></i><span class="littleIndent">Delete</span></a>
 		</div>
 		<div class="botText">
@@ -413,6 +414,9 @@ function formatBytes($size, $precision = 2)
 		</div>
 		<div class="botText">
 			<a class="noselect" href="javascript:moveFile();" id="moveLink"><i class="fa fa-arrows" aria-hidden="true"></i><span class="littleIndent">Move</span></a>
+		</div>
+		<div class="botText">
+			<a class="noselect" href="javascript:unzipFile();" id="unzipLink"><i class="fa fa-file-archive-o" aria-hidden="true"></i><span class="littleIndent">Unzip</span></a>
 		</div>
 		<?php
 		$folderStorage = formatBytes($folderStorage);
@@ -566,25 +570,35 @@ function formatBytes($size, $precision = 2)
 					renameLink = document.getElementById("renameLink"),
 					editLink = document.getElementById("editLink"),
 					copyLink = document.getElementById("copyLink"),
-					moveLink = document.getElementById("moveLink");
+					moveLink = document.getElementById("moveLink"),
+					downloadLink = document.getElementById("downloadLink"),
+					unzipLink = document.getElementById("unzipLink");
 				if (selectedFiles.length > 0) {
 					deleteLink.classList.remove("noselect");
 					copyLink.classList.remove("noselect");
 					moveLink.classList.remove("noselect");
+					downloadLink.classList.remove("noselect");
 				} else {
 					deleteLink.classList.add("noselect");
 					copyLink.classList.add("noselect");
 					moveLink.classList.add("noselect");
+					downloadLink.classList.add("noselect");
 				}
 				if (selectedFiles.length == 1) {
 					var testSplit = selectedFiles[0].split(':');
 					renameLink.classList.remove("noselect");
 					if (testSplit[0] == "file") {
 						editLink.classList.remove("noselect");
+						var extfind = testSplit[1].split('.'),
+							ext = extfind[extfind.length-1];
+						if (extfind.length > 1 && ext == "zip") {
+							unzipLink.classList.remove("noselect");
+						}
 					}
 				} else {
 					renameLink.classList.add("noselect");
 					editLink.classList.add("noselect");
+					unzipLink.classList.add("noselect");
 				}
 			}
 			function searcharray(search_for_string, array_to_search) 
@@ -632,6 +646,15 @@ function formatBytes($size, $precision = 2)
 					uploadScreen.style.display = "block";
 				} else {
 					uploadScreen.style.display = "none";
+				}
+			}
+			
+			// Download
+			
+			function downloadItem() {
+				if (selectedFiles.length > 0) {
+					var selectedString = selectedFiles.join(',');
+					window.location = "download.php?loc=<?php echo $_GET['loc']; ?>&files=" + selectedString;
 				}
 			}
 			
@@ -736,6 +759,21 @@ function formatBytes($size, $precision = 2)
 					window.location = "move.php?loc=<?php echo $_GET['loc'] ?>&moveto=" + moveFrame.contentWindow.document.getElementById("location").innerHTML + "&files=" + selectedString;
 				} else {
 					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't move nothing!";
+				}
+			}
+			
+			// Unzip
+			
+			function unzipFile() {
+				if (selectedFiles.length == 1) {
+					var extfind = selectedFiles[0].split('.'),
+						ext = extfind[extfind.length-1],
+						filepath = selectedFiles[0].split(':')[1].split('/'),
+						filename = filepath[filepath.length-1];
+					if (extfind.length > 1 && ext == "zip") {
+						top.inload('start');
+						window.location = "unzip.php?loc=<?php echo $_GET['loc'] ?>&file=" + filename;
+					}
 				}
 			}
 		</script>
