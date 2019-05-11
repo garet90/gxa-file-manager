@@ -1,4 +1,9 @@
-<?php require "auth.php"; ?>
+<?php
+	require "auth.php";
+	if ($usercheck && $passcheck) { } else {
+		die();
+	}
+?>
 <!DOCTYPE html>
 <html>
 	<head>

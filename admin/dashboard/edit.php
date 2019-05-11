@@ -1,5 +1,8 @@
 <?php
 	require 'auth.php';
+	if ($usercheck && $passcheck) { } else {
+		die();
+	}
 	$filecontents = file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file']);
 	function formatBytes($size, $precision = 2)
 	{

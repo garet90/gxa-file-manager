@@ -1,15 +1,18 @@
 <?php
-require 'auth.php';
-if ($usemysql) {
-	$sqlilink = mysqli_connect($mysqlip, $mysqluser, $mysqlpassword, $mysqldatabase);
-}
-function formatBytes($size, $precision = 2)
-{
-	$base = log($size, 1024);
-	$suffixes = array('B', 'KB', 'MB', 'GB', 'TB');   
-
-	return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
-} 
+	require 'auth.php';
+	if ($usercheck && $passcheck) { } else {
+		die();
+	}
+	if ($usemysql) {
+		$sqlilink = mysqli_connect($mysqlip, $mysqluser, $mysqlpassword, $mysqldatabase);
+	}
+	function formatBytes($size, $precision = 2)
+	{
+		$base = log($size, 1024);
+		$suffixes = array('B', 'KB', 'MB', 'GB', 'TB');   
+	
+		return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+	} 
 ?>
 <!DOCTYPE html>
 <html>
