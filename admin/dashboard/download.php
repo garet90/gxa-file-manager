@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 	
-	if ($usercheck && passcheck) {
+	if ($usercheck && $passcheck) {
 		function zipdirectory($zip,$folder,$root) { // zipdirectory($zip,'dashboard','/admin/')
 			$src = '../../' . $root . '/' . $folder;
 			$dir = opendir($src);

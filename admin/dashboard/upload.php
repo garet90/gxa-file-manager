@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 
-	if ($usercheck && passcheck) {
+	if ($usercheck && $passcheck) {
 		$target_dir = '../../' . $_POST['loc'] . '/';
 		$target_file = $target_dir . basename($_FILES["file"]["name"]);
 		$uploadOk = 1;

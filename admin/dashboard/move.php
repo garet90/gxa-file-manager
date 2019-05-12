@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 	
-	if ($usercheck && passcheck) {
+	if ($usercheck && $passcheck) {
 		$files = explode(',',$_GET['files']);
 		$errors = '';
 		foreach ($files as $file) {

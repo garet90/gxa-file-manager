@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 	
-	if ($usercheck && passcheck) {
+	if ($usercheck && $passcheck) {
 		$continue = true;
 		$errors = '';
 		if (file_exists('../../' . $_GET['loc'] . '/' . $_GET['newname'])) {

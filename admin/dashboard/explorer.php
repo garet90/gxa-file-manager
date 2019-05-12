@@ -14,7 +14,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>File Explorer</title>
+		<title><div class="windowicon"><i class="fa fa-folder-open-o" aria-hidden="true"></i></div><?php echo $_GET['loc']; ?> - File Explorer</title>
 		<script src="jquery-3.2.1.min.js"></script>
 		<script src="jquery.tablesorter.min.js"></script>
 		<style>
@@ -234,7 +234,7 @@
 		</script>
 		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
-	<body onLoad="top.inload('stop')">
+	<body>
 		<span id="verifyJS">false</span>
 		<div class="center" id="errorbox">
 			<div class="boxinner first">
@@ -268,7 +268,7 @@
 					<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
 					<input type="file" id="fileBox" name="file" />
 					<div class="delbut no" onClick="this.parentElement.parentElement.parentElement.style.display = 'none';">Cancel</div>
-					<input type="submit" onClick="top.inload('start')" value="Upload" class="delbut yes" />
+					<input type="submit" value="Upload" class="delbut yes" />
 				</form>
 			</div>
 		</div>
@@ -327,7 +327,7 @@
 						if (is_dir ('../../' . $_GET['loc'] . '/' . $file)) {
 							if ($file == '.') {
 								$filename = '';
-								$btext = '<div class="botText"><a onclick="' . "top.inload('start')" . '" href="?loc=' . $_GET['loc'] . '"><i class="fa fa-refresh" aria-hidden="true"></i><span class="littleIndent">Refresh</span></a></div>
+								$btext = '<div class="botText"><a href="?loc=' . $_GET['loc'] . '"><i class="fa fa-refresh" aria-hidden="true"></i><span class="littleIndent">Refresh</span></a></div>
 								' . $btext;
 							} else if ($file == '..') {
 								$newUrl = preg_replace('/(\/+)/','/',$_GET['loc']);
@@ -338,14 +338,14 @@
 								}
 								$finLoc = join('/', $splitLoc);
 								$filename = '';
-								$btext = '<div class="botText"><a onclick="' . "top.inload('start')" . '" href="?loc=' . $finLoc . '/' . '"><i class="fa fa-folder-open-o" aria-hidden="true"></i><span class="littleIndent">Parent Directory</span></a></div>
+								$btext = '<div class="botText"><a href="?loc=' . $finLoc . '/' . '"><i class="fa fa-folder-open-o" aria-hidden="true"></i><span class="littleIndent">Parent Directory</span></a></div>
 								' . $btext;
 							} else {
 								$dirbef = $_GET['loc'] . '/' . $file;
 								$diraft = preg_replace('/(\/+)/','/',$dirbef);
 								$filePath = $_GET['loc'] . '/' . $file;
 								$filePath = preg_replace('/(\/+)/','/',$filePath);
-								$filename = '<tr><td><input class="fileInput" onClick="' . "selectFile(this,'dir:" . $filePath . "')" . '" type="checkbox" /></td><td><span class="filesn">1|</span><i class="fa fa-folder-o" aria-hidden="true"></i></td><td><a onclick="' . "top.inload('start')" . '" href="?loc=' . $diraft . '">' . $file . '/</a></td><td></td><td></td></tr>';
+								$filename = '<tr><td><input class="fileInput" onClick="' . "selectFile(this,'dir:" . $filePath . "')" . '" type="checkbox" /></td><td><span class="filesn">1|</span><i class="fa fa-folder-o" aria-hidden="true"></i></td><td><a href="?loc=' . $diraft . '">' . $file . '/</a></td><td></td><td></td></tr>';
 								$folderCount = $folderCount + 1;
 							}
 							echo $filename;
@@ -427,13 +427,13 @@
 		$explodedURL = explode('/', $_GET['loc']);
 		$prevURLstring = "/";
 		foreach ($explodedURL as $key=>$URL) {
-			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "' onclick=" . '"' . "top.inload('start')" . '">' . $URL . "</a>";
+			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "'" . '>' . $URL . "</a>";
 			$prevURLstring = $prevURLstring . $URL . '/';
 			$prevURLstring = preg_replace('/(\/+)/','/',$prevURLstring);
 		}
 		$joinedURL = join('/', $explodedURL);
 		
-		echo '<div class="locview"><a href="explorer.php?loc=/" onclick="' . "top.inload('start')" . '">root</a>' . $joinedURL . ' - ' . $fileCount . ' files, ' . $folderCount . ' folders, taking up ' . $folderStorage . '.</div>';
+		echo '<div class="locview"><a href="explorer.php?loc=/">root</a>' . $joinedURL . ' - ' . $fileCount . ' files, ' . $folderCount . ' folders, taking up ' . $folderStorage . '.</div>';
 		?>
 		<div class="center" id="createMenu">
 			<div class="boxinner first">
@@ -446,7 +446,7 @@
 					<input type="radio" name="filetype" value="file" id="fileType1" /><label for="fileType1">File</label><br />
 					<input type="radio" name="filetype" value="directory" id="fileType2" /><label for="fileType2">Directory</label></br /><br />
 					<label for="fileName">File Name</label><br /><input type="text" id="fileName" name="filename" class="textinput" />
-					<input class="delbut yes" onclick="top.inload('start')" type="submit" value="Create" />
+					<input class="delbut yes" type="submit" value="Create" />
 					<div class="delbut no" onClick="this.parentElement.parentElement.parentElement.style.display = 'none'; window.create = false;">Cancel</div>
 				</form>
 			</div>
@@ -492,7 +492,6 @@
 				} 
 			}
 			function deleteConfirmed() {
-				top.inload('start');
 				if (selectedFiles.length > 0) {
 					window.location = "delete.php?loc=" + loc + "&files=" + selectedFiles.join(',');
 				} else {
@@ -670,7 +669,6 @@
 						var fileSplit = selectedFiles[0].split('/'),
 							fileName = fileSplit.pop();
 						window.location = "edit.php?loc=<?php echo $_GET['loc']; ?>&file=" + fileName;
-						top.inload('start');
 					}
 				}
 			}
@@ -692,7 +690,6 @@
 				}
 			}
 			function confirmRename() {
-				top.inload('start');
 				if (selectedFiles.length == 1) {
 					var newFileName = document.getElementById("newFileName").value;
 					window.location = "rename.php?file=" + selectedFiles[0] + "&loc=<?php echo $_GET['loc'] ?>&newname=" + newFileName;
@@ -722,7 +719,6 @@
 				}
 			}
 			function copyConfirmed() {
-				top.inload('start');
 				if (selectedFiles.length > 0) {
 					var selectedString = selectedFiles.join(",");
 					window.location = "copy.php?loc=<?php echo $_GET['loc'] ?>&files=" + selectedString;
@@ -741,7 +737,6 @@
 							itemmove = document.getElementById("itemmove");
 						moveItem.style.display = "block";
 						moveFrame.src = "directoryexplorer.php?loc=/";
-						top.inload('start');
 						if (selectedFiles.length == 1) {
 							var filesplit = selectedFiles[0].split('/'),
 								filename = filesplit[filesplit.length-1];
@@ -755,7 +750,6 @@
 				}
 			}
 			function confirmMove() {
-				top.inload('start');
 				var moveFrame = document.getElementById("moveFrame"),
 					selectedString = selectedFiles.join(",");
 				if (selectedFiles.length > 0) {
@@ -774,7 +768,6 @@
 						filepath = selectedFiles[0].split(':')[1].split('/'),
 						filename = filepath[filepath.length-1];
 					if (extfind.length > 1 && ext == "zip") {
-						top.inload('start');
 						window.location = "unzip.php?loc=<?php echo $_GET['loc'] ?>&file=" + filename;
 					}
 				}
@@ -790,7 +783,6 @@
 		<script type="text/javascript">
 			var verifyJS = document.getElementById("verifyJS");
 			if (verifyJS.innerHTML == "false" || verifyJS.innerHTML == false) {
-				top.inload('start');
 				location.reload();
 			}
 		</script>

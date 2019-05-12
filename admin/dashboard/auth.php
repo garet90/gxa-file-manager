@@ -4,8 +4,8 @@
 	$passcheck = false;
 	if ($usemysql) {
 		if (isset($_COOKIE['user']) && isset($_COOKIE['password'])) { } else {
-			$errors = 'You are not logged in (cookies not set)';
-			header('Location: ../index.php?errors=' . $errors);
+			$errors = 'You are not logged in';
+			header('Location: login.php?errors=' . $errors);
 			die();
 		}
 		$sqlilink = mysqli_connect($mysqlip, $mysqluser, $mysqlpassword, $mysqldatabase);
@@ -15,7 +15,7 @@
 				$usercheck = true;
 			} else {
 				$errors = 'Your username or password is incorrect';
-				header('Location: ../index.php?errors=' . $errors);
+				header('Location: login.php?errors=' . $errors);
 				mysqli_close($sqlilink);
 				die();
 			}
@@ -26,14 +26,14 @@
 				$passcheck = true;
 			} else {
 				$errors = 'Your username or password is incorrect';
-				header('Location: ../index.php?errors=' . $errors);
+				header('Location: login.php?errors=' . $errors);
 				mysqli_close($sqlilink);
 				die();
 			}
 		}
 		if (mysqli_connect_errno()) {
 			$errors = 'There was an error communicating with the SQL database: ' . mysqli_error();
-			header('Location: ../index.php?errors=' . $errors);
+			header('Location: login.php?errors=' . $errors);
 			mysqli_close($sqlilink);
 			die();
 		}
@@ -45,12 +45,12 @@
 				$passcheck = true;
 			} else {
 				$errors = 'Your username or password is incorrect';
-				header('Location: ../index.php?errors=' . $errors);
+				header('Location: login.php?errors=' . $errors);
 				die();
 			}
 		} else {
-			$errors = 'You are not logged in (cookies not set)';
-			header('Location: ../index.php?errors=' . $errors);
+			$errors = 'You are not logged in';
+			header('Location: login.php?errors=' . $errors);
 			die();
 		}
 	}

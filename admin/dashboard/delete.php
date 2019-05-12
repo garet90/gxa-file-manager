@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 	
-	if ($usercheck && passcheck) {
+	if ($usercheck && $passcheck) {
 		function rrmdir($dir) {
 			if (is_dir($dir)) {
 				$objects = scandir($dir);

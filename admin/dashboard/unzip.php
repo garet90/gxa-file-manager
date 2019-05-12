@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 
-	if ($usercheck && passcheck) {
+	if ($usercheck && $passcheck) {
 		$zip = new ZipArchive;
 		$res = $zip->open('../../' . $_GET['loc'] . '/' . $_GET['file']);
 		if ($res === TRUE) {

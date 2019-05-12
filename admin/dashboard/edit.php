@@ -15,7 +15,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Document Editor</title>
+		<title><div class="windowicon"><i class="fa fa-file-o" aria-hidden="true"></i></div><?php echo $_GET['file']; ?> - Document Editor</title>
 		<style>
 		body,html {
 			padding: 1px;
@@ -113,13 +113,13 @@
 		</style>
 	</head>
 	
-	<body onload="top.inload('stop')">
+	<body>
 		<div class="wrapper">
 			<div class="inner top">
-				<div class="button" onclick='window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>"; top.inload("start");'>Back</div>
+				<div class="button" onclick='window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>";'>Back</div>
 				<p class="title"><?php echo $_GET['file']; ?></p>
 				<form method="post" action="save.php">
-					<input type="submit" class="button" value="Save" onclick="top.inload('start')" />
+					<input type="submit" class="button" value="Save" />
 			</div>
 			<div class="inner">
 				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
@@ -137,13 +137,13 @@
 		$explodedURL = explode('/', substr($_GET['loc'],1));
 		$prevURLstring = "/";
 		foreach ($explodedURL as $key=>$URL) {
-			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "' onclick=" . '"' . "top.inload('start')" . '">' . $URL . "</a>";
+			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "'>" . $URL . "</a>";
 			$prevURLstring = $prevURLstring . $URL . '/';
 			$prevURLstring = preg_replace('/(\/+)/','/',$prevURLstring);
 		}
 		$joinedURL = join('/', $explodedURL);
 		?>
-		<div class="locview"><a href="explorer.php?loc=/" onclick="top.inload('start')">root</a>/<?php echo $joinedURL . $_GET['file'] . ' - ' . number_format(strlen($filecontents)) . ' characters, ' . number_format(substr_count( $filecontents, "\n" )+1) . ' lines, taking up ' . formatBytes(strlen($filecontents)); ?></div>
+		<div class="locview"><a href="explorer.php?loc=/">root</a>/<?php echo $joinedURL . $_GET['file'] . ' - ' . number_format(strlen($filecontents)) . ' characters, ' . number_format(substr_count( $filecontents, "\n" )+1) . ' lines, taking up ' . formatBytes(strlen($filecontents)); ?></div>
 		<script type="text/javascript">
 			function getLineNumberAndColumnIndex(textarea,selectLocation){
 				var textLines = textarea.value.substr(0, selectLocation).split("\n");

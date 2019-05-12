@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 	
-	if ($usercheck && passcheck) {
+	if ($usercheck && $passcheck) {
 		$errors = '';
 		$okrun = true;
 		if (strpos($_POST['filename'], '/') == true) {
