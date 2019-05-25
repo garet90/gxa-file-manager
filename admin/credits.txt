@@ -1,4 +1,4 @@
-JQuery javascript plugin,
+Font Awesome 4.7.0,
 "/admin/dashboard/img/linenumbers.png" by Aakash Chakravarthy
 
 Programming by Garet Halliday

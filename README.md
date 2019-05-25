@@ -1,5 +1,5 @@
 # GXa File Manager
-GXa is a simple administration tool that allows you to edit the files on your server remotely. It is all stored in a single folder for easy installation and use. Only one server is required. 
+GXa is an advanced desktop-like administration tool that allows you to edit the files on your server remotely. It is all stored in a single folder for easy installation and use. Only one server is required. 
 # Installation
 1. Download GXa File Manager from github
 2. Move gxa-file-manager/admin to the root directory of your server
@@ -10,8 +10,6 @@ GXa is a simple administration tool that allows you to edit the files on your se
 # Requirements
 - PHP 5
 # Included Plugins
-- jQuery
 - Font Awesome
-- Tablesorter
 
 *All of these are open source and free to use.
