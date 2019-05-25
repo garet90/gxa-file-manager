@@ -17,13 +17,13 @@
 			$errors = $errors . 'Invalid file name.<br />';
 		}
 		if ($continue == false) {
-			header('location: explorer.php?loc=' . $_GET['loc'] . '&errors=' . $errors);
+			echo $errors;
 		} else {
 			$filesp = explode(':', $_GET['file']);
 			$newfile = '../../' . $_GET['loc'] . '/' . $_GET['newname'];
 			$fromfile = '../../' . $filesp[1];
 			rename($fromfile, $newfile);
-			header('location: explorer.php?loc=' . $_GET['loc']);
+			header('Location: explorer.php?loc=' . $_GET['loc']);
 		}
 	}
 ?>

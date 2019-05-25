@@ -1,10 +1,12 @@
 <?php
 
+	$gxaversion = 'v0.2.2 DEVELOPMENT BUILD';
+
 	// ------------------------------------ //
 	//       ACCOUNT / LOGIN SETTINGS       //
 	// ------------------------------------ //
 	
-	$usemysql = true;
+	$usemysql = false;
 	// Turning this on will allow the use of a MySQL database to hold login information, settings, etc. It will also enable multiple usually disabled features.
 	// This may become required in the future.
 

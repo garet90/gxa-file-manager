@@ -41,7 +41,7 @@
 			}
 		}
 		if ($okrun == true) {
-			header('location: explorer.php?loc=' . $_GET['loc']);
+			echo "<script type='text/javascript'>top.resolveDarkened(window.frameElement.parentElement.parentElement,'" . $_GET['frameToReload'] . "');</script>";
 		} else {
 			header('location: explorer.php?loc=' . $_GET['loc'] . '&errors=' . $errors);
 		}

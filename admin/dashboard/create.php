@@ -4,18 +4,14 @@
 	if ($usercheck && $passcheck) {
 		$errors = '';
 		$okrun = true;
-		if (strpos($_POST['filename'], '/') == true) {
-			$okrun = false;
-			$errors = $errors . 'Invalid file name.<br />';
-		}
 		if ($okrun == true) {
-			if ($_POST['filetype'] == "file") {
-				if(file_exists('../../' . $_POST['loc'] . '/' . $_POST['filename'])){
+			if ($_GET['filetype'] == "file") {
+				if(file_exists('../../' . $_GET['loc'] . '/new file')){
 					$okrun = false;
 					$errors = $errors . "File already exists.<br />";
 				}
-			} else if ($_POST['filetype'] == "directory") {
-				if(file_exists('../../' . $_POST['loc'] . '/' . $_POST['filename'])){
+			} else if ($_GET['filetype'] == "dir") {
+				if(file_exists('../../' . $_GET['loc'] . '/new folder')){
 					$okrun = false;
 					$errors = $errors . "Directory already exists.<br />";
 				}
@@ -25,18 +21,13 @@
 			}
 		}
 		if ($okrun == true) {
-			if ($_POST["filetype"] == "file") {
-				$file = fopen('../../' . $_POST['loc'] . '/' . $_POST['filename'], 'w') or die("can't open file");
+			if ($_GET["filetype"] == "file") {
+				$file = fopen('../../' . $_GET['loc'] . '/new file', 'w') or die("can't open file");
 				fclose($file);
-			} else if ($_POST["filetype"] == "directory") {
-				mkdir('../../' . $_POST['loc'] . '/' . $_POST['filename']);
+			} else if ($_GET["filetype"] == "dir") {
+				mkdir('../../' . $_GET['loc'] . '/new folder');
 			}
 		}
-		if ($okrun == true) {
-			header('location: explorer.php?loc=' . $_POST['loc']);
-		} else {
-			$errors = $errors . "No files were created.";
-			header('location: explorer.php?loc=' .$_POST['loc'] . '&errors=' . $errors);
-		}
+		header('location: explorer.php?loc=' . $_GET['loc']);
 	}
 ?>

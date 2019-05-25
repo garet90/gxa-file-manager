@@ -1,4 +1,0 @@
-JQuery javascript plugin,
-"/admin/dashboard/img/linenumbers.png" by Aakash Chakravarthy
-
-Programming by Garet Halliday

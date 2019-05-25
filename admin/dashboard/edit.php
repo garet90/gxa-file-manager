@@ -18,11 +18,12 @@
 		<title><div class="windowicon"><i class="fa fa-file-o" aria-hidden="true"></i></div><?php echo $_GET['file']; ?> - Document Editor</title>
 		<style>
 		body,html {
-			padding: 1px;
+			padding: 0;
+			margin: 0;
 		}
 		.editorarea {
 			resize: none;
-			height: 80vh;
+			height: 100%;
 			width: 100%;
 			margin-bottom: -2px;
 			margin-top: -1px;
@@ -50,100 +51,60 @@
 			font-family: monospace;
 			text-size-adjust: none;
 		}
-		.wrapper {
-			padding: 2px;
-			background-color: #CDCDCD;
+		#writeArea {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 25px;
 		}
-		.inner {
-			background-color: white;
-			border: 1px solid white;
-			font-size: 8pt;
-			font-family: Sans-serif;
-			color: #3D3D3D;
-			overflow: hidden;
-		}
-		.inner.top {
-			padding: 8px;
-			background-color: #e6EEEE;
-			color: black;
-			margin-bottom: 2px;
-			height: 10px;
-			position: relative;
-		}
-		.button {
-			cursor: pointer;
+		footer {
+			position: fixed;
+			left: 0;
+			right: 0;
 			font-size: 10px;
-			font-weight: normal;
-			margin-top: -1px;
+			color: #666;
+			user-select: none;
+			z-index: 1;
+			font-family: Sans-serif;
+			overflow: hidden;
+			box-sizing: border-box;
+			bottom: 0;
+			border-top: 1px solid white;
+			background-color: #E0E6F8;
+			height: 28px;
+			padding: 6px 10px;
+			line-height: 15px;
 		}
-		div.button {
-			float: left;
-			text-align: left;
+		#action-frame {
+			display: none;
 		}
-		input.button {
-			background: none;
-			border: none;
-			float: right;
-			text-align: right;
-			padding: 0;
+		#botText, #infoText {
+			display: inline-block;
 		}
 		#botText {
-			font-size: 8pt;
-			margin: 5px 0px;
-			color: #3D3D3D;
+			float: left;
 		}
-		.title {
-			position: absolute;
-			top: 0;
-			margin: 0;
-			padding: 8px 0;
-			left: 50%;
-			text-align: center;
-			width: 200px;
-			margin-left: -100px;
-			font-weight: bold;
-			font-size: 10px;
-			margin-top: -1px;
-		}
-		.locview {
-			font-size: 8pt;
-			color: #3D3D3D;
-			margin: 10px 0;
+		#infoText {
+			float: right;
 		}
 		</style>
 	</head>
-	
 	<body>
-		<div class="wrapper">
-			<div class="inner top">
-				<div class="button" onclick='window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>";'>Back</div>
-				<p class="title"><?php echo $_GET['file']; ?></p>
-				<form method="post" action="save.php">
-					<input type="submit" class="button" value="Save" />
+		<iframe src="about:blank" id="action-frame" name="action-frame"></iframe>
+		<form id="edit-form" method="post" action="save.php" target="action-frame">
+			<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
+			<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
+			<div id="writeArea">
+				<textarea class="editorarea" id="data" name="data" onkeyup="setIndexIndicator(this);" onmouseup="this.onkeyup();" onscroll="changeNumberCol(this);" spellcheck="false"><?php
+					echo str_replace("<","&" . "lt;",str_replace(">","&" . "gt;",$filecontents));
+				?></textarea>
 			</div>
-			<div class="inner">
-				<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
-				<input type="hidden" name="file" value="<?php echo $_GET['file'] ?>" />
-				<div id="writeArea">
-					<textarea class="editorarea" id="data" name="data" onkeyup="setIndexIndicator(this);" onmouseup="this.onkeyup();" onscroll="changeNumberCol(this);" spellcheck="false"><?php
-						echo str_replace("<","&" . "lt;",str_replace(">","&" . "gt;",$filecontents));
-					?></textarea>
-				</div>
-				</form>
-			</div>
-		</div>
-		<div id="botText">Line #, Column #</div>
-		<?php
-		$explodedURL = explode('/', substr($_GET['loc'],1));
-		$prevURLstring = "/";
-		foreach ($explodedURL as $key=>$URL) {
-			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "'>" . $URL . "</a>";
-			$prevURLstring = $prevURLstring . $URL . '/';
-			$prevURLstring = preg_replace('/(\/+)/','/',$prevURLstring);
-		}
-		$joinedURL = join('/', $explodedURL);
-		?>
-		<div class="locview"><a href="explorer.php?loc=/">root</a>/<?php echo $joinedURL . $_GET['file'] . ' - ' . number_format(strlen($filecontents)) . ' characters, ' . number_format(substr_count( $filecontents, "\n" )+1) . ' lines, taking up ' . formatBytes(strlen($filecontents)); ?></div>
+		</form>
+		<footer>
+			<div id="botText">Line #, Column #</div>
+			<div id="infoText"></div>
+		</footer>
 		<script type="text/javascript">
 			function getLineNumberAndColumnIndex(textarea,selectLocation){
 				var textLines = textarea.value.substr(0, selectLocation).split("\n");
@@ -162,12 +123,18 @@
 			}
 			var textareas = document.getElementsByTagName('textarea');
 			var count = textareas.length;
-			var shifted = false;
+			var keys = [];
 			document.onkeydown = function(e) {
-				if(e.keyCode==16 || e.which==16) { shifted = true; }
+				var key = e.keyCode || e.which;
+				keys[key] = true;
+				if (keys[17] && keys[83]) {
+					e.preventDefault();
+					cmAction("cm-edit-sa");
+				}
 			}
 			document.onkeyup = function(e) {
-				if(e.keyCode==16 || e.which==16) { shifted = false; }
+				var key = e.keyCode || e.which;
+				keys[key] = false;
 			}
 			for(var i=0;i<count;i++){
 				textareas[i].onkeydown = function(e){
@@ -184,7 +151,7 @@
 							s = this.selectionStart,
 							se = this.selectionEnd;
 							sef = 0;
-							if (shifted) {
+							if (keys[16]) {
 								var td = 0;
 								for (i = selectStartIndex[0]-1; i < selectEndIndex[0]; i++) {
 									if (lines[i][0] == "\t") {
@@ -242,6 +209,83 @@
 				}
 				return browser;
 			}
+			
+			function getAbsolutePosition(e) {
+			  var posx = 0;
+			  var posy = 0;
+			
+			  if (!e) var e = window.event;
+			
+			  if (e.pageX || e.pageY) {
+			    posx = e.pageX - document.body.scrollLeft - 
+			                       document.documentElement.scrollLeft;
+			    posy = e.pageY - document.body.scrollTop - 
+			                       document.documentElement.scrollTop;
+			  } else if (e.clientX || e.clientY) {
+			    posx = e.clientX;
+			    posy = e.clientY;
+			  }
+			
+			  return {
+			    x: posx,
+			    y: posy
+			  }
+			}
+			
+			document.addEventListener( "contextmenu", function(e) {
+				e.preventDefault();
+				top.openContextMenu(getAbsolutePosition(e), window.frameElement, false, false, true);
+				top.setElementFunctionInFrame("cm-edit-sa", window.frameElement);
+				top.setElementFunctionInFrame("cm-edit-se", window.frameElement);
+				top.setElementFunctionInFrame("cm-edit-un", window.frameElement);
+				top.setElementFunctionInFrame("cm-edit-re", window.frameElement);
+				top.setElementFunctionInFrame("cm-edit-cu", window.frameElement);
+				top.setElementFunctionInFrame("cm-edit-co", window.frameElement);
+				top.setElementFunctionInFrame("cm-edit-pa", window.frameElement);
+			});
+			
+			function cmAction(action, menuX, menuY) {
+				var dataEditor = document.getElementById("data");
+				if (action == "cm-edit-sa") {
+					document.getElementById("edit-form").submit();
+					document.getElementById("infoText").innerHTML = "Saving...";
+					document.getElementById("action-frame").onload = function() {
+						document.getElementById("infoText").innerHTML = "Saved";
+						window.setTimeout(function(){
+							document.getElementById("infoText").innerHTML = "";
+						},1000);
+					};
+				} else if (action == "cm-edit-se") {
+					dataEditor.focus();
+					dataEditor.setSelectionRange(0, dataEditor.value.length);
+					dataEditor.onkeyup();
+				} else if (action == "cm-edit-un") {
+					dataEditor.focus();
+					document.execCommand("undo");
+				} else if (action == "cm-edit-re") {
+					dataEditor.focus();
+					document.execCommand("redo");
+				} else if (action == "cm-edit-cu") {
+					dataEditor.focus();
+					document.execCommand("cut");
+				} else if (action == "cm-edit-co") {
+					dataEditor.focus();
+					document.execCommand("copy");
+				} else if (action == "cm-edit-pa") {
+					dataEditor.focus();
+					document.execCommand("paste");
+				}
+			}
+			
+			document.addEventListener( "keydown", function(e) {
+				if (e.keyCode == 27 || e.which == 27) {
+					top.closeContextMenu();
+				}
+			});
+			
+			document.addEventListener( "click", function(e) {
+				top.closeContextMenu();
+			});
 		</script>
 	</body>
 </html>

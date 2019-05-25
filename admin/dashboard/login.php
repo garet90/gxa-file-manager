@@ -1,6 +1,6 @@
 <?php
+	require '../config.php';
 	if (isset($_POST['user']) && isset($_POST['password'])) {
-		require '../config.php';
 		if ($usemysql) {
 			$sqlilink = mysqli_connect($mysqlip, $mysqluser, $mysqlpassword, $mysqldatabase);
 			$tablecheck = mysqli_query($sqlilink,"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'settings'");
@@ -36,7 +36,7 @@
 			echo "Login successful. Redirecting...";
 			setcookie("user", $_POST["user"], 0, "/", $_SERVER['HTTP_HOST'], 1);
 			setcookie("password", $_POST["password"], 0, "/", $_SERVER['HTTP_HOST'], 1);
-		   	header('Location: explorer.php?loc=/');
+		   	echo '<script>top.loggedIn(); window.frameElement.parentElement.parentElement.remove();</script>';
 			mysqli_close($sqlilink);
 			die();
 		} else {
@@ -44,7 +44,7 @@
 				echo "Login successful. Redirecting...";
 				setcookie("user", $_POST["user"], 0, "/", $_SERVER['HTTP_HOST'], 1);
 				setcookie("password", $_POST["password"], 0, "/", $_SERVER['HTTP_HOST'], 1);
-				header('Location: explorer.php?loc=/');
+		   		echo '<script>top.loggedIn(); window.frameElement.parentElement.parentElement.remove();</script>';
 				die();
 			} else {
 				$errors = 'Your username or password is incorrect';
@@ -86,6 +86,6 @@
 				}
 			?>
 		</form>
-		<span>GXa File Manager v0.2.1 DEVELOPMENT BUILD by Garet Halliday. <a href="https://github.com/garet90/gxa-file-manager" target="_new">github</a></span>
+		<span>GXa File Manager <?php echo $gxaversion; ?> by Garet Halliday. <a href="https://github.com/garet90/gxa-file-manager" target="_new">github</a></span>
 	</body>
 </html>

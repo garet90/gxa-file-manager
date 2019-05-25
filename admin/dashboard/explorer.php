@@ -10,781 +10,757 @@
 	
 		return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
 	}
+	function strToInt($str, $precision = 4) {
+		$result = '';
+		$index = array(' '=>'00','a'=>'01','b'=>'02','c'=>'03','d'=>'04','e'=>'05','f'=>'06','g'=>'07','h'=>'08','i'=>'09','j'=>'10','k'=>'11','l'=>'12','m'=>'13','n'=>'14','o'=>'15','p'=>'16','q'=>'17','r'=>'18','s'=>'19','t'=>'20','u'=>'21','v'=>'22','w'=>'23','x'=>'24','y'=>'25','z'=>'26','.'=>'27');
+		$i = -1;
+		while ($i++ < $precision) {
+			if ($i < strlen($str)) {
+				if (array_key_exists($str[$i],$index)) {
+					$result .= $index[$str[$i]];
+				} else {
+					$result .= '00';
+				}
+			} else {
+				$result .= '00';
+			}
+		}
+		return $result;
+	}
+	if (isset($_GET['toRefresh'])) {
+		echo "<script>top.document.getElementById('" . $_GET['toRefresh'] . "').contentWindow.location.reload(); window.location = 'explorer.php?loc=" . $_GET['loc'] . "';</script>";
+		die();
+	}
 ?>
 <!DOCTYPE html>
-<html>
+<html ondrop="drop(event)" ondragover="allowDrop(event)">
 	<head>
 		<title><div class="windowicon"><i class="fa fa-folder-open-o" aria-hidden="true"></i></div><?php echo $_GET['loc']; ?> - File Explorer</title>
-		<script src="jquery-3.2.1.min.js"></script>
-		<script src="jquery.tablesorter.min.js"></script>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 		<style>
-			input[type=button] {
-				appearance: none;
-				-webkit-appearance: none;
-				-moz-appearance: none;
-			}
-			.center {
-				padding: 2px;
-				background-color: #CDCDCD;
-				word-break: break-all;
-				width: 300px;
-				position: fixed;
-				left: 50%;
-				top: 50%;
-				-webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
-				-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
-				box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
-				top: 50%;
-				transform: translateY(-50%) translateX(-50%);
-				display: none;
-				max-height: 100vh;
-				overflow-y: auto;
-				overflow-x: hidden;
-			}
-			.boxinner {
-				background-color: white;
-				border: 1px solid white;
-				font-size: 8pt;
-				padding: 8px 15px;
-				font-family: Sans-serif;
-				color: #3D3D3D;
-				min-height: 35px;
-				position: relative;
-			}
-			.boxinner.first {
-				font-weight: bold;
-				background-color: #e6EEEE;
-				color: black;
-				margin-bottom: 2px;
-				min-height: 0;
-			}
-			.boxinner p {
+			body, html {
 				margin: 0;
 				padding: 0;
-				text-align: center;
+				min-height: 100%;
 			}
-			.deleteTitle {
-				width: 100%;
-				font-weight: bold;
-				font-size: 10pt;
-				text-align: center;
-				font-family: Sans-serif;
-				margin-bottom: 0;
-			}
-			.delbut {
-				clear: both;
-				padding: 10px;
-				cursor: pointer;
-				height: 10px;
-				line-height: 10px;
-				width: auto;
-				margin: 0px 15px 15px 15px;
-				position: absolute;
-				bottom: 0;
-				font-family: Sans-serif;
-				font-size: 8pt;
-				font-weight: bold;
-				background-color: white;
-				color: #3D3D3D;
-				border: 1px solid #CDCDCD;
-			}
-			.delbut:hover {
-				background-color: #e6EEEE;
-			}
-			.delbut.no {
+			footer {
+				position: fixed;
 				left: 0;
-			}
-			.delbut.yes {
 				right: 0;
-			}
-			input.delbut {
-				padding-bottom: 15px;
-				padding-top: 15px;
-				line-height: 0;
-			}
-			.sortIcon {
-				float: right;
-				padding-right: 5px;
-			}
-			/* tables */
-			table.tablesorter {
-				font-family:arial;
-				background-color: #CDCDCD;
-				margin:10px 0pt 15px;
-				font-size: 8pt;
-				width: 100%;
-				text-align: left;
-			}
-			table.tablesorter thead tr th, table.tablesorter tfoot tr th {
-				background-color: #e6EEEE;
-				border: 1px solid #FFF;
-				font-size: 8pt;
-				padding: 4px;
-			}
-			table.tablesorter thead tr .header {
-				background-image: url(bg.gif);
-				background-repeat: no-repeat;
-				background-position: center right;
-				cursor: pointer;
-			}
-			table.tablesorter tbody td {
-				color: #3D3D3D;
-				padding: 4px;
-				background-color: #FFF;
-				vertical-align: top;
-			}
-			table.tablesorter tbody tr.odd td {
-				background-color:#F0F0F6;
-			}
-			table.tablesorter thead tr .headerSortUp {
-				background-image: url(asc.gif);
-			}
-			table.tablesorter thead tr .headerSortDown {
-				background-image: url(desc.gif);
-			}
-			table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
-				background-color: #8dbdd8;
-			}
-			.sortable {
-				cursor: pointer;
-			}
-			.botText {
-				margin-right: 10px;
-				display: inline-block;
-				font-size: 8pt;
-			}
-			#filetable {
-				margin-bottom: 0;
-			}
-			.locview {
-				font-size: 8pt;
-				color: #3D3D3D;
-				margin: 10px 0;
-			}
-			.textinput {
-				margin-bottom: 50px;
-			}
-			#fileBox {
-				margin: auto;
-				margin-bottom: 50px;
-				width: 288px;
-			}
-			.filesn {
-				display: none;
-			}
-			.noselect {
-				cursor: default;
-				color: #A4A4A4;
-			}
-			#newFileName {
-				margin-bottom: 50px;
-			}
-			.littleIndent {
-				padding-left: 3px;
-			}
-			#verifyJS {
-				display: none;
-			}
-			#errorbox {
-				display: <?php
-					if (isset($_GET['errors'])) {
-						echo "block";
-					} else {
-						echo "none";
-					}
-				?>;
-			}
-			.errorbutton {
-				clear: both;
-				padding: 10px;
-				cursor: pointer;
-				height: 10px;
-				line-height: 10px;
-				position: absolute;
 				bottom: 0;
+				height: 15px;
+				line-height: 15px;
+				background-color: #E0E6F8;
+				padding: 6px 10px;
+				z-index: 1;
+				font-family: Sans-serif;
+				font-size: 10px;
+				color: #666;
+				border-top: 1px solid white;
+				user-select: none;
+			}
+			#files {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: center;
+				margin: 0 0 27px 0;
+			}
+			.file {
+				width: 75px;
+				height: 90px;
+				display: inline-block;
+				line-height: 60px;
+				text-align: center;
+				position: relative;
+				margin: 5px;
+				border: 1px solid transparent;
+				box-sizing: border-box;
+				user-select: none;
+				cursor: default;
+				color: #1C1C1C;
+			}
+			.file:hover {
+				border-color: #E0E6F8;
+				background-color: #EFF2FB;
+			}
+			.file.selected {
+				background-color: #E0E6F8;
+				border-color: #CED8F6;
+			}
+			.file__icon {
+				font-size: 40px;
+				color: #424242;
+			}
+			.file__name {
+				position: absolute;
+				background-color: rgba(235,235,235,.75);
+				line-height: 10pt;
+				top: 65px;
+				left: 50%;
+				transform: translateY(-50%) translateX(-50%);
 				font-family: Sans-serif;
 				font-size: 8pt;
-				font-weight: bold;
-				background-color: white;
-				color: #3D3D3D;
-				margin-bottom: 15px;
-				left: 50%;
-				width: 100px;
-				margin-left: -62px;
-				text-align: center;
-				border: 1px solid #CDCDCD;
+				padding: 5px;
+				border-radius: 5px;
+				max-width: 100%;
+				box-sizing: border-box;
+				overflow-wrap: break-word;
 			}
-			.errorbutton:hover {
-				background-color: #e6EEEE;
+			#loc {
+				float: left;
 			}
-			.errortext {
-				margin-bottom: 50px !important;
-				word-break: normal;
+			#sortby {
+				float: right;
+				font-size: inherit;
+				height: 100%;
 			}
-			#moveFrame {
-				border: 0;
-				width: 100%;
-				padding-bottom: 50px;
+			#selector {
+				position: absolute;
+				z-index: 1;
+				background-color: rgba(100,130,255,.25);
+				border: 1px solid rgba(100,130,255,.5);
+				box-sizing: border-box;
+				display: none;
 			}
 		</style>
-		<script>
-			function resizeIframe(obj) {
-				obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
-			}
-		</script>
-		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
 	<body>
-		<span id="verifyJS">false</span>
-		<div class="center" id="errorbox">
-			<div class="boxinner first">
-				<p>An error occurred</p>
-			</div>
-			<div class="boxinner">
-				<p class="errortext"><?php
-					if (isset($_GET['errors'])) {
-						echo $_GET['errors'];
-					}
-				?></p>
-				<div class="errorbutton" onclick="this.parentElement.parentElement.style.display = 'none';">OK</div>
-			</div>
-		</div>
-		<div class="center" id="confirmDelete">
-			<div class="boxinner first">
-				<p>Delete <span id="itemdel">file</span>?</p>
-			</div>
-			<div class="boxinner">
-				<p class="errortext">Are you sure? This item will be gone forever.</p>
-				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none'">Cancel</div>
-				<div class="delbut yes" onClick="deleteConfirmed();">Delete</div>
-			</div>
-		</div>
-		<div class="center" id="uploadItem">
-			<div class="boxinner first">
-				<p>Upload file</p>
-			</div>
-			<div class="boxinner">
-				<form method="post" action="upload.php" enctype="multipart/form-data">
-					<input type="hidden" name="loc" value="<?php echo $_GET['loc'] ?>" />
-					<input type="file" id="fileBox" name="file" />
-					<div class="delbut no" onClick="this.parentElement.parentElement.parentElement.style.display = 'none';">Cancel</div>
-					<input type="submit" value="Upload" class="delbut yes" />
-				</form>
-			</div>
-		</div>
-		<div class="center" id="copyItem">
-			<div class="boxinner first">
-				<p>Copy <span id="itemcopy">file</span>?</p>
-			</div>
-			<div class="boxinner">
-				<p class="errortext">Copies will be named "copy.[original file name]".</p>
-				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none';">Cancel</div>
-				<div class="delbut yes" onClick="copyConfirmed();">Copy</div>
-			</div>
-		</div>
-		<div class="center" id="renameItem">
-			<div class="boxinner first">
-				<p>Rename <span id="itemrename">file</span>?</p>
-			</div>
-			<div class="boxinner">
-				<label for="newFileName">New file name</label><br />
-				<input type="text" id="newFileName" />
-				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none';">Cancel</div>
-				<div class="delbut yes" onClick="confirmRename()">Rename</div>
-			</div>
-		</div>
-		<div class="center" id="moveItem">
-			<div class="boxinner first">
-				<p>Move <span id="itemmove">file</span>?</p>
-			</div>
-			<div class="boxinner">
-				<iframe src="about:blank" scrolling="no" frameborder="0" id="moveFrame" onload="resizeIframe(this)"></iframe>
-				<div class="delbut no" onClick="this.parentElement.parentElement.style.display = 'none';">Cancel</div>
-				<div class="delbut yes" onClick="confirmMove()">Move Here</div>
-			</div>
-		</div>
-		<table id="filetable" class="tablesorter">
-			<thead>
-				<tr>
-					<th data-sorter="false"><input type="checkbox" onClick="toggleAll(this)" id="toggleAllCheck" /></th>
-					<th onclick="sortChange();" class="sortable"><i class="fa fa-file-o" aria-hidden="true"></i><div class="sortIcon" id="s1"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
-					<th onclick="sortChange();" class="sortable">Name<div class="sortIcon" id="s2"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
-					<th onclick="sortChange();" class="sortable">Size<div class="sortIcon" id="s3"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
-					<th onclick="sortChange();" class="sortable">Modified<div class="sortIcon" id="s4"><i class="fa fa-sort" aria-hidden="true"></i></div></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-					$fileCount = 0;
-					$folderCount = 0;
-					$folderStorage = 0;
-					$btext = '';
-					$files = scandir('../../' . $_GET['loc']);
-					if ($_GET['loc'] == '/') {
-						unset($files[1]);
-					}
-					foreach ($files as $file) {
-						if (is_dir ('../../' . $_GET['loc'] . '/' . $file)) {
-							if ($file == '.') {
-								$filename = '';
-								$btext = '<div class="botText"><a href="?loc=' . $_GET['loc'] . '"><i class="fa fa-refresh" aria-hidden="true"></i><span class="littleIndent">Refresh</span></a></div>
-								' . $btext;
-							} else if ($file == '..') {
-								$newUrl = preg_replace('/(\/+)/','/',$_GET['loc']);
-								$splitLoc = explode('/', $newUrl);
-								$removed = array_pop($splitLoc);
-								if ($removed == "") {
-									$remove2 = array_pop($splitLoc);
-								}
-								$finLoc = join('/', $splitLoc);
-								$filename = '';
-								$btext = '<div class="botText"><a href="?loc=' . $finLoc . '/' . '"><i class="fa fa-folder-open-o" aria-hidden="true"></i><span class="littleIndent">Parent Directory</span></a></div>
-								' . $btext;
-							} else {
-								$dirbef = $_GET['loc'] . '/' . $file;
-								$diraft = preg_replace('/(\/+)/','/',$dirbef);
-								$filePath = $_GET['loc'] . '/' . $file;
-								$filePath = preg_replace('/(\/+)/','/',$filePath);
-								$filename = '<tr><td><input class="fileInput" onClick="' . "selectFile(this,'dir:" . $filePath . "')" . '" type="checkbox" /></td><td><span class="filesn">1|</span><i class="fa fa-folder-o" aria-hidden="true"></i></td><td><a href="?loc=' . $diraft . '">' . $file . '/</a></td><td></td><td></td></tr>';
-								$folderCount = $folderCount + 1;
-							}
-							echo $filename;
+		<form method="post" action="upload.php" enctype="multipart/form-data">
+			<input type="hidden" name="loc" value="<?php echo $_GET['loc']; ?>"></input>
+			<input type="file" name="file" style="display: none;" id="file-upload" onchange="this.parentElement.submit();"></input>
+		</form>
+		<div id="files">
+			<?php
+				$path = '../../' . $_GET['loc'];
+				$files = scandir($path);
+				$filecount = 0;
+				$foldercount = 0;
+				$totalsize = 0;
+				unset($files[0]);
+				if ($_GET['loc'] == '/') {
+					unset($files[1]);
+				}
+				foreach ($files as $file) {
+					$filetype = '';
+					$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+					$filetitle = '';
+					$finalname = $file;
+					$linkTo = '';
+					if (is_dir ($path . $file)) {
+						$filetype = 'dir';
+						$fileicon = '<i class="fa fa-folder-o" aria-hidden="true"></i>';
+						$filetitle = $file . '
+Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
+						$foldercount = $foldercount + 1;
+					} else {
+						$expfilename = explode('.',$file);
+						$extension = end($expfilename);
+						$filetype = '.' . $extension;
+						if (count($expfilename) == 1) {
+							$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+						} else if ($extension == "png" || $extension == "jpg" || $extension == "gif" || $extension == "bmp" || $extension == "ico") {
+							$fileicon = '<i class="fa fa-file-image-o" aria-hidden="true"></i>';
+						} else if ($extension == "txt") {
+							$fileicon = '<i class="fa fa-file-text-o" aria-hidden="true"></i>';
+						} else if ($extension == "php" || $extension == "html" || $extension == "xml" || $extension == "js" || $extension == "css") {
+							$fileicon = '<i class="fa fa-file-code-o" aria-hidden="true"></i>';
+						} else if ($extension == "wav" || $extension == "mp3") {
+							$fileicon = '<i class="fa fa-file-audio-o" aria-hidden="true"></i>';
+						} else if ($extension == "xlsx" || $extension == "xlsm") {
+							$fileicon = '<i class="fa fa-file-excel-o" aria-hidden="true"></i>';
+						} else if ($extension == "pdf") {
+							$fileicon = '<i class="fa fa-file-pdf-o" aria-hidden="true"></i>';
+						} else if ($extension == "docx" || $extension == "docm") {
+							$fileicon = '<i class="fa fa-file-word-o" aria-hidden="true"></i>';
+						} else if ($extension == "tar" || $extension == "zip" || $extension == "gz" || $extension == "7z" || $extension == "s7z" || $extension == "jar" || $extension == "rar" || $extension == "tgz") {
+							$fileicon = '<i class="fa fa-file-archive-o" aria-hidden="true"></i>';
+						} else if ($extension == "pptx" || $extension == "pptm") {
+							$fileicon = '<i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>';
+						} else if ($extension == "mov" || $extension == "qt" || $extension == "mp4" || $extension == "m4p" || $extension == "m4v") {
+							$fileicon = '<i class="fa fa-file-video-o" aria-hidden="true"></i>';
+						} else if ($extension == "gxl") {
+							$linkData = explode(':',file_get_contents($path . $file));
+							$fileicon = '<i class="fa ' . $linkData[0] . '" aria-hidden="true"></i>';
+							$linkTo = $linkData[1];
+							$finalname = substr($file,0,-4);
 						} else {
-							$filesizeSort = filesize('../../' . $_GET['loc'] . '/' . $file);
-							$filesize = formatBytes($filesizeSort);
-							$filedate = date ("m/d/Y, H:i:s", filemtime('../../' . $_GET['loc'] . '/' . $file));
-							$filesplit = explode('.', $file);
-							if (count ($filesplit) > 1) {
-								$extension = array_pop($filesplit);
-								if ($extension == "png" || $extension == "jpg" || $extension == "gif" || $extension == "bmp" || $extension == "ico") {
-									$fileicon = '<span class="filesn">2|</span><i class="fa fa-file-image-o" aria-hidden="true"></i>';
-								} else if ($extension == "txt") {
-									$fileicon = '<span class="filesn">3|</span><i class="fa fa-file-text-o" aria-hidden="true"></i>';
-								} else if ($extension == "php" || $extension == "html" || $extension == "xml" || $extension == "js" || $extension == "css") {
-									$fileicon = '<span class="filesn">4|</span><i class="fa fa-file-code-o" aria-hidden="true"></i>';
-								} else if ($extension == "wav" || $extension == "mp3") {
-									$fileicon = '<span class="filesn">5|</span><i class="fa fa-file-audio-o" aria-hidden="true"></i>';
-								} else if ($extension == "xlsx" || $extension == "xlsm") {
-									$fileicon = '<span class="filesn">6|</span><i class="fa fa-file-excel-o" aria-hidden="true"></i>';
-								} else if ($extension == "pdf") {
-									$fileicon = '<span class="filesn">7|</span><i class="fa fa-file-pdf-o" aria-hidden="true"></i>';
-								} else if ($extension == "docx" || $extension == "docm") {
-									$fileicon = '<span class="filesn">8|</span><i class="fa fa-file-word-o" aria-hidden="true"></i>';
-								} else if ($extension == "tar" || $extension == "zip" || $extension == "gz" || $extension == "7z" || $extension == "s7z" || $extension == "jar" || $extension == "rar" || $extension == "tgz") {
-									$fileicon = '<span class="filesn">9|</span><i class="fa fa-file-archive-o" aria-hidden="true"></i>';
-								} else if ($extension == "pptx" || $extension == "pptm") {
-									$fileicon = '<span class="filesn">10|</span><i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>';
-								} else if ($extension == "mov" || $extension == "qt" || $extension == "mp4" || $extension == "m4p" || $extension == "m4v") {
-									$fileicon = '<span class="filesn">11|</span><i class="fa fa-file-video-o" aria-hidden="true"></i>';
+							$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+						}
+						$filetitle = $file . '
+Size: ' . formatBytes(filesize($path . $file)) . '
+Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
+						$filecount = $filecount + 1;
+						$totalsize += filesize($path . $file);
+					}
+					$fileorder = "0";
+					if ($filetype == "dir") {
+						$fileorder = "-1";
+					}
+					echo '<div data-selected="false" data-name="' . $file . '" data-filetype="' . $filetype . '" ondragstart="drag(event)" data-continue="false" draggable="true" class="file" title="' . $filetitle . '" style="order: ' . $fileorder . '" onmousedown="selectfile(this,false)" onclick="selectfile(this,true)" data-linkto="' . $linkTo . '"><div class="file__icon">' . $fileicon . '</div><div class="file__name" contenteditable="false">' . $finalname . '</div></div>';
+				}
+			?>
+		</div>
+		<div id="selector"></div>
+		<footer>
+			<span id="loc"><?php echo $_GET['loc']; ?></span><span style="padding-left: 4px;">- <?php echo $foldercount; ?> folders, <?php echo $filecount; ?> files, a total of <?php echo formatBytes($totalsize); ?></span>
+		</footer>
+		<script type="text/javascript">
+			function allowDrop(ev) {
+				ev.preventDefault();
+			}
+			
+			function drag(ev) {
+				var loc = document.getElementById("loc").innerHTML,
+					selectedFiles = document.getElementsByClassName("selected"),
+					selectedFileNames = "";
+				
+				for (i = 0; i < selectedFiles.length; i++) {
+					if (selectedFiles[i].getAttribute("data-name") !== "..") {
+						if (selectedFiles[i].getAttribute("data-filetype") == "dir") {
+							var filetype = "dir";
+						} else {
+							var filetype = "file";
+						}
+						selectedFileNames += filetype + ":" + loc + selectedFiles[i].getAttribute("data-name") + ",";
+					}
+				}
+				
+				selectedFileNames = selectedFileNames.slice(0,-1);
+				
+				ev.dataTransfer.setData("files", selectedFileNames);
+				ev.dataTransfer.setData("toRefresh", window.frameElement.id);
+				ev.dataTransfer.setData("loc", loc);
+			}
+			
+			function drop(ev) {
+				ev.preventDefault();
+				var loc = document.getElementById("loc").innerHTML;
+				if (ev.dataTransfer.getData("loc") !== loc) {
+					window.location = "move.php?files=" + ev.dataTransfer.getData("files") + "&loc=" + loc + "&toRefresh=" + ev.dataTransfer.getData("toRefresh");
+				}
+			}
+		</script>
+		<script type="text/javascript">
+			if (window.frameElement.id == "desktop-explorer") {
+				document.getElementsByTagName("footer")[0].style.display = "none";
+				top.document.getElementById("cm-files-pd").style.display = "none";
+				document.getElementsByClassName("file")[0].remove();
+				document.getElementById("files").style.flexDirection = "column";
+				document.getElementById("files").style.justifyContent = "left";
+			}
+		</script>
+		<script type="text/javascript">
+			function clickInsideElement( e, className ) {
+				var el = e.srcElement || e.target;
+			
+				if ( el.classList.contains(className) ) {
+					return el;
+				} else {
+					while ( el = el.parentNode ) {
+						if ( el.classList && el.classList.contains(className) ) {
+							return el;
+						}
+					}
+				}
+			
+				return false;
+			}
+			function selectfile(elmnt,hardclick) {
+				var selectedFiles = document.getElementsByClassName("selected"),
+					selectedLength = selectedFiles.length,
+					loc = document.getElementById("loc").innerHTML;
+				if (elmnt && elmnt.classList.contains("selected")) {
+					if (selectedLength == 1) {
+						if (hardclick && !keys[17]) {
+							if (elmnt.getAttribute("data-continue") == "false") {
+								elmnt.setAttribute("data-continue","true");
+							} else {
+								var filetype = elmnt.getAttribute("data-filetype"),
+									filename = elmnt.getAttribute("data-name");
+								if (filetype == "dir") {
+									if (filename == ".") {
+										window.location = "?loc=" + loc;
+									} else if (filename == "..") {
+										if (loc == "/") {
+											window.location = "?loc=/";
+										} else {
+											var parentdirectory = loc.split('/').slice(0, -2).join('/');
+											if (parentdirectory == "") {
+												if (window.frameElement.id !== "desktop-explorer") {
+													window.location = "?loc=/";
+												} else {
+													top.createWindow('explorer.php?loc=/');
+												}
+											} else {
+												if (window.frameElement.id !== "desktop-explorer") {
+													window.location = "?loc=" + parentdirectory + "/";
+												} else {
+													top.createWindow('explorer.php?loc=' + parentdirectory + '/');
+												}
+											}
+										}
+									} else {
+										if (window.frameElement.id !== "desktop-explorer") {
+											window.location = "?loc=" + loc + filename + "/";
+										} else {
+											top.createWindow('explorer.php?loc=' + loc + filename + '/');
+										}
+									}
 								} else {
-									$fileicon = '<span class="filesn">12|</span><i class="fa fa-file-o" aria-hidden="true"></i>';
+									if (filetype == ".gxl") {
+										top.createWindow(elmnt.getAttribute("data-linkto"));
+									}
 								}
-							} else {
-								$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+								elmnt.setAttribute("data-continue","false");
 							}
-							$filePath = $_GET['loc'] . '/' . $file;
-							$filePath = preg_replace('/(\/+)/','/',$filePath);
-							echo '<tr><td><input type="checkbox" onClick="' . "selectFile(this,'file:" . $filePath . "')" . '" class="fileInput" /></td><td>' . $fileicon . '</td><td>' . $file . '</td><td><span class="filesn">' . $filesizeSort . '|</span>' . $filesize . '</td><td>' . $filedate . '</td></tr>';
-							$fileCount = $fileCount + 1;
-							$folderStorage = $folderStorage + $filesizeSort;
-						}
-					}
-				?>
-			</tbody>
-		</table>
-		<?php
-		echo $btext;
-		?><div class="botText">
-			<a href="javascript:createItem();"><i class="fa fa-file-o" aria-hidden="true"></i><span class="littleIndent">Create</span></a>
-		</div>
-		<div class="botText">
-			<a href="javascript:uploadItem();"><i class="fa fa-upload" aria-hidden="true"></i><span class="littleIndent">Upload</span></a>
-		</div>
-		<div class="botText">
-			<a href="javascript:downloadItem();" id="downloadLink" class="noselect"><i class="fa fa-download" aria-hidden="true"></i><span class="littleIndent">Download</span></a>
-		</div>
-		<div class="botText">
-			<a href="javascript:deleteConf();" id="deleteLink" class="noselect"><i class="fa fa-trash-o" aria-hidden="true"></i><span class="littleIndent">Delete</span></a>
-		</div>
-		<div class="botText">
-			<a href="javascript:editFile();" id="editLink" class="noselect"><i class="fa fa-pencil-square-o" aria-hidden="true"></i><span class="littleIndent">Edit</span></a>
-		</div>
-		<div class="botText">
-			<a href="javascript:renameFile();" id="renameLink" class="noselect"><i class="fa fa-pencil" aria-hidden="true"></i><span class="littleIndent">Rename</span></a>
-		</div>
-		<div class="botText">
-			<a class="noselect" href="javascript:copyFile();" id="copyLink"><i class="fa fa-files-o" aria-hidden="true"></i><span class="littleIndent">Copy</span></a>
-		</div>
-		<div class="botText">
-			<a class="noselect" href="javascript:moveFile();" id="moveLink"><i class="fa fa-arrows" aria-hidden="true"></i><span class="littleIndent">Move</span></a>
-		</div>
-		<div class="botText">
-			<a class="noselect" href="javascript:unzipFile();" id="unzipLink"><i class="fa fa-file-archive-o" aria-hidden="true"></i><span class="littleIndent">Unzip</span></a>
-		</div>
-		<?php
-		$folderStorage = formatBytes($folderStorage);
-		
-		$explodedURL = explode('/', $_GET['loc']);
-		$prevURLstring = "/";
-		foreach ($explodedURL as $key=>$URL) {
-			$explodedURL[$key] = "<a href='explorer.php?loc=" . $prevURLstring . $URL . "'" . '>' . $URL . "</a>";
-			$prevURLstring = $prevURLstring . $URL . '/';
-			$prevURLstring = preg_replace('/(\/+)/','/',$prevURLstring);
-		}
-		$joinedURL = join('/', $explodedURL);
-		
-		echo '<div class="locview"><a href="explorer.php?loc=/">root</a>' . $joinedURL . ' - ' . $fileCount . ' files, ' . $folderCount . ' folders, taking up ' . $folderStorage . '.</div>';
-		?>
-		<div class="center" id="createMenu">
-			<div class="boxinner first">
-				<p>Create file</p>
-			</div>
-			<div class="boxinner">
-				<form method="post" action="create.php">
-					<input type="hidden" value="<?php echo $_GET['loc'] ?>" name="loc" />
-					<label>File Type</label><br />
-					<input type="radio" name="filetype" value="file" id="fileType1" /><label for="fileType1">File</label><br />
-					<input type="radio" name="filetype" value="directory" id="fileType2" /><label for="fileType2">Directory</label></br /><br />
-					<label for="fileName">File Name</label><br /><input type="text" id="fileName" name="filename" class="textinput" />
-					<input class="delbut yes" type="submit" value="Create" />
-					<div class="delbut no" onClick="this.parentElement.parentElement.parentElement.style.display = 'none'; window.create = false;">Cancel</div>
-				</form>
-			</div>
-		</div>
-		<script type="text/javascript">
-			//verifyJS
-			document.getElementById("verifyJS").innerHTML = "true";
-			//code
-			var loc = "<?php echo $_GET['loc']; ?>",
-				create = false;
-			
-			// Create
-			
-			function createItem() {
-				var createMenu = document.getElementById("createMenu");
-				if (create) {
-					createMenu.style.display = "none";
-					create = false;
-				} else {
-					createMenu.style.display = "block";
-					create = true;
-				}
-			}
-			
-			// Delete
-			
-			function deleteConf() {
-				var confirmDelete = document.getElementById("confirmDelete");
-				if (confirmDelete.style.display !== "block") {
-					if (selectedFiles.length > 0) {
-						var itemdel = document.getElementById('itemdel');
-						confirmDelete.style.display = "block";
-						if (selectedFiles.length == 1) {
-							var filesplit = selectedFiles[0].split('/'),
-								filename = filesplit[filesplit.length-1];
-							itemdel.innerHTML = '"' + filename + '"';
-						} else if (selectedFiles.length > 1) {
-							itemdel.innerHTML = selectedFiles.length + " items";
-						}
-					}
-				} else {
-					confirmDelete.style.display = "none";
-				} 
-			}
-			function deleteConfirmed() {
-				if (selectedFiles.length > 0) {
-					window.location = "delete.php?loc=" + loc + "&files=" + selectedFiles.join(',');
-				} else {
-					window.location = "explorer.php?loc=" + loc + "&errors=You can't delete nothing!";
-				}
-			}
-			
-			// Toggle
-			
-			function toggleAll(accord) {
-				var array = document.getElementsByClassName("fileInput");
-				
-				if (accord.checked) {
-					for(var ii = 0; ii < array.length; ii++)
-					{
-
-					   if(array[ii].type == "checkbox")
-					   {
-						  if(array[ii].className == "fileInput")
-						   {
-							array[ii].checked = true;
-							array[ii].onclick.apply(array[ii]);
-						   }
-
-
-					   }
-					}
-				} else {
-					for(var ii = 0; ii < array.length; ii++)
-					{
-
-					   if(array[ii].type == "checkbox")
-					   {
-						  if(array[ii].className == "fileInput")
-						   {
-							array[ii].checked = false;
-							array[ii].onclick.apply(array[ii]);
-						   }
-
-
-					   }
-					}
-				}
-			}
-			function sortChange() {
-				var sortObjects = 4,
-					sortList = {
-						'ascending': '<i class="fa fa-sort-asc" aria-hidden="true"></i>',
-						'descending': '<i class="fa fa-sort-desc" aria-hidden="true"></i>',
-						'none': '<i class="fa fa-sort" aria-hidden="true"></i>'
-					};
-				
-				window.setTimeout(function(){
-					sortObjects++;
-					for (i = 1; i < sortObjects; i++) { 
-						document.getElementById('s' + i).innerHTML = sortList[document.getElementById('s' + i).parentElement.parentElement.getAttribute('aria-sort')];
-					}
-				},1);
-			}
-			
-			// Select
-			
-			var selectedFiles = [];
-			function selectFile(x,y) {
-				changeSelectStatus();
-				if (x.checked || x == true) {
-					if (searcharray(y,selectedFiles)) {
-					} else {
-						selectedFiles.push(y);
-					}
-				} else {
-					var arrayItem = selectedFiles.indexOf(y);
-					if (arrayItem > -1) {
-						selectedFiles.splice(arrayItem, 1);
-					}
-				}
-				var deleteLink = document.getElementById("deleteLink"),
-					renameLink = document.getElementById("renameLink"),
-					editLink = document.getElementById("editLink"),
-					copyLink = document.getElementById("copyLink"),
-					moveLink = document.getElementById("moveLink"),
-					downloadLink = document.getElementById("downloadLink"),
-					unzipLink = document.getElementById("unzipLink");
-				if (selectedFiles.length > 0) {
-					deleteLink.classList.remove("noselect");
-					copyLink.classList.remove("noselect");
-					moveLink.classList.remove("noselect");
-					downloadLink.classList.remove("noselect");
-				} else {
-					deleteLink.classList.add("noselect");
-					copyLink.classList.add("noselect");
-					moveLink.classList.add("noselect");
-					downloadLink.classList.add("noselect");
-				}
-				if (selectedFiles.length == 1) {
-					var testSplit = selectedFiles[0].split(':');
-					renameLink.classList.remove("noselect");
-					if (testSplit[0] == "file") {
-						editLink.classList.remove("noselect");
-						var extfind = testSplit[1].split('.'),
-							ext = extfind[extfind.length-1];
-						if (extfind.length > 1 && ext == "zip") {
-							unzipLink.classList.remove("noselect");
-						}
-					}
-				} else {
-					renameLink.classList.add("noselect");
-					editLink.classList.add("noselect");
-					unzipLink.classList.add("noselect");
-				}
-			}
-			function searcharray(search_for_string, array_to_search) 
-			{
-			    for (var i=0; i<array_to_search.length; i++) 
-				{
-			        if (array_to_search[i].match(search_for_string))
-					{ 
-						return true;
-					}
-			    }
-			 
-			    return false;
-			}
-			function changeSelectStatus() {
-				var fileInput = document.getElementsByClassName("fileInput"),
-					arrchecked = false,
-					arrunchecked = false,
-					toggleAllCheck = document.getElementById("toggleAllCheck");
-				for(var ii = 0; ii < fileInput.length; ii++) {
-					if (fileInput[ii].checked == true) {
-						arrchecked = true;
-					} else if (fileInput[ii].checked == false) {
-						arrunchecked = true;
-					}
-				}
-				if (arrchecked == true && arrunchecked == true) {
-					toggleAllCheck.indeterminate = true;
-					toggleAllCheck.checked = true;
-				} else if (arrchecked == true && arrunchecked == false) {
-					toggleAllCheck.indeterminate = false;
-					toggleAllCheck.checked = true;
-				} else if (arrchecked == false && arrunchecked == true) {
-					toggleAllCheck.indeterminate = false;
-					toggleAllCheck.checked = false;
-				}
-				return arrchecked + ":" + arrunchecked;
-			}
-			
-			// Upload
-			
-			function uploadItem() {
-				var uploadScreen = document.getElementById('uploadItem');
-				if (uploadScreen.style.display !== "block") {
-					uploadScreen.style.display = "block";
-				} else {
-					uploadScreen.style.display = "none";
-				}
-			}
-			
-			// Download
-			
-			function downloadItem() {
-				if (selectedFiles.length > 0) {
-					var selectedString = selectedFiles.join(',');
-					window.location = "download.php?loc=<?php echo $_GET['loc']; ?>&files=" + selectedString;
-				}
-			}
-			
-			// Edit
-			
-			function editFile() {
-				if (selectedFiles.length == 1) {
-					var testSplit = selectedFiles[0].split(':');
-					if (testSplit[0] == "file") {
-						var fileSplit = selectedFiles[0].split('/'),
-							fileName = fileSplit.pop();
-						window.location = "edit.php?loc=<?php echo $_GET['loc']; ?>&file=" + fileName;
-					}
-				}
-			}
-			
-			// Rename
-			
-			function renameFile() {
-				if (selectedFiles.length == 1) {
-					var renameItem = document.getElementById("renameItem"),
-						itemrename = document.getElementById("itemrename");
-					if (renameItem.style.display !== "block") {
-						var filesplit = selectedFiles[0].split('/'),
-							filename = filesplit[filesplit.length-1];
-						renameItem.style.display = "block";
-						itemrename.innerHTML = '"' + filename + '"';
-					} else {
-						renameItem.style.display = "none";
-					}
-				}
-			}
-			function confirmRename() {
-				if (selectedFiles.length == 1) {
-					var newFileName = document.getElementById("newFileName").value;
-					window.location = "rename.php?file=" + selectedFiles[0] + "&loc=<?php echo $_GET['loc'] ?>&newname=" + newFileName;
-				} else {
-					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't rename " + selectedFiles.length + " files!";
-				}
-			}
-			
-			// Copy
-			
-			function copyFile() {
-				if (selectedFiles.length > 0) {
-					var copyItem = document.getElementById("copyItem");
-					if (copyItem.style.display !== "block") {
-						copyItem.style.display = "block";
-						var itemCopy = document.getElementById("itemcopy");
-						if (selectedFiles.length == 1) {
-							var filesplit = selectedFiles[0].split('/'),
-								filename = filesplit[filesplit.length-1];
-							itemCopy.innerHTML = '"' + filename + '"';
-						} else if (selectedFiles.length > 1) {
-							itemCopy.innerHTML = selectedFiles.length + " items";
 						}
 					} else {
-						copyItem.style.display = "none";
-					}
-				}
-			}
-			function copyConfirmed() {
-				if (selectedFiles.length > 0) {
-					var selectedString = selectedFiles.join(",");
-					window.location = "copy.php?loc=<?php echo $_GET['loc'] ?>&files=" + selectedString;
-				} else {
-					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't copy nothing!";
-				}
-			}
-			
-			// Move
-			
-			function moveFile() {
-				var moveItem = document.getElementById("moveItem");
-				if (moveItem.style.display !== "block") {
-					if (selectedFiles.length > 0) {
-						var moveFrame = document.getElementById("moveFrame"),
-							itemmove = document.getElementById("itemmove");
-						moveItem.style.display = "block";
-						moveFrame.src = "directoryexplorer.php?loc=/";
-						if (selectedFiles.length == 1) {
-							var filesplit = selectedFiles[0].split('/'),
-								filename = filesplit[filesplit.length-1];
-							itemmove.innerHTML = '"' + filename + '"';
-						} else {
-							itemmove.innerHTML = selectedFiles.length + " items";
+						if (keys[17] && !hardclick) {
+							elmnt.classList.remove("selected");
+							elmnt.setAttribute("data-selected","false");
+							elmnt.setAttribute("data-continue","false");
 						}
 					}
-				} else {
-					moveItem.style.display = "none";
-				}
-			}
-			function confirmMove() {
-				var moveFrame = document.getElementById("moveFrame"),
-					selectedString = selectedFiles.join(",");
-				if (selectedFiles.length > 0) {
-					window.location = "move.php?loc=<?php echo $_GET['loc'] ?>&moveto=" + moveFrame.contentWindow.document.getElementById("location").innerHTML + "&files=" + selectedString;
-				} else {
-					window.location = "explorer.php?loc=<?php echo $_GET['loc'] ?>&errors=You can't move nothing!";
-				}
-			}
-			
-			// Unzip
-			
-			function unzipFile() {
-				if (selectedFiles.length == 1) {
-					var extfind = selectedFiles[0].split('.'),
-						ext = extfind[extfind.length-1],
-						filepath = selectedFiles[0].split(':')[1].split('/'),
-						filename = filepath[filepath.length-1];
-					if (extfind.length > 1 && ext == "zip") {
-						window.location = "unzip.php?loc=<?php echo $_GET['loc'] ?>&file=" + filename;
+				} else if (!hardclick) {
+					if (keys[16]) {
+						if (elmnt) {
+							var selectedFiles = document.getElementsByClassName("selected"),
+								firstselection = undefined;
+							if (selectedFiles.length == 0) {
+								firstselection = document.getElementsByClassName("file")[0];
+								firstselection.classList.add("selected");
+								firstselection.setAttribute("data-selected","true");
+							} else {
+								for (i = 0; i < selectedFiles.length; i++) {
+									if (selectedFiles[i].style.order == "-1" && firstselection == undefined) {
+										firstselection = selectedFiles[i];
+									}
+								}
+								if (firstselection == undefined) {
+									firstselection = selectedFiles[0];
+								}
+							}
+							if (+firstselection.style.order < +elmnt.style.order) {
+								selectOriginUntil(elmnt);
+								selectToEnd(firstselection);
+							} else if (+firstselection.style.order > +elmnt.style.order) {
+								selectOriginUntil(firstselection);
+								selectToEnd(elmnt);
+							} else {
+								var allFiles = document.getElementsByClassName("file"),
+									selecting = false;
+								for (i = 0; i < allFiles.length; i++) {
+									if (allFiles[i] == elmnt || allFiles[i] == firstselection) {
+										selecting = !selecting;
+									} else if (selecting && allFiles[i].style.order == elmnt.style.order) {
+										allFiles[i].classList.add("selected");
+										allFiles[i].setAttribute("data-selected","true");
+									}
+								}
+							}
+						}
+					} else if (keys[17] !== true) {
+						for (i = 0; i < selectedLength; i++) {
+							selectedFiles[0].setAttribute("data-continue","false");
+							selectedFiles[0].setAttribute("data-selected","false");
+							selectedFiles[0].classList.remove("selected");
+						}
+					}
+					if (elmnt) {
+						elmnt.classList.add("selected");
+						elmnt.setAttribute("data-selected","true");
 					}
 				}
 			}
-		</script>
-		<script type="text/javascript">
-		$(function(){
-			$("#filetable").tablesorter({
-				sortList : [[1,0],[2,0],[3,0],[4,0]]
+			function selectOriginUntil(elmnt) {
+				var allFiles = document.getElementsByClassName("file"),
+					selecting = true;
+				for (i = 0; i < allFiles.length; i++) {
+					if (allFiles[i] == elmnt) {
+						selecting = false;
+					} else if (allFiles[i].style.order == elmnt.style.order && selecting) {
+						allFiles[i].classList.add("selected");
+						allFiles[i].setAttribute("data-selected","true");
+					}
+				}
+			}
+			function selectToEnd(elmnt) {
+				var allFiles = document.getElementsByClassName("file"),
+					selecting = false;
+				for (i = 0; i < allFiles.length; i++) {
+					if (allFiles[i] == elmnt) {
+						selecting = true;
+					} else if (allFiles[i].style.order == elmnt.style.order && selecting) {
+						allFiles[i].classList.add("selected");
+						allFiles[i].setAttribute("data-selected","true");
+					}
+				}
+			}
+			var keys = [];
+			document.onkeydown = function(e) {
+				var key = e.keyCode || e.which;
+				keys[key] = true;
+				if (keys[17] && keys[65]) {
+					var files = document.getElementsByClassName("file");
+					for (i = 0; i < files.length; i++) {
+						files[i].classList.add("selected");
+					}
+				}
+				if (keys[46]) {
+					cmAction("cm-files-de");
+				}
+			}
+			document.onkeyup = function(e) {
+				var key = e.keyCode || e.which;
+				keys[key] = false;
+			}
+			var dragselecting = false,
+				dragselectstart = [];
+			document.addEventListener( "mousedown", function(e) {
+				if (clickInsideElement( e, "file" ) == false) {
+					selectfile();
+				}
+				top.closeContextMenu();
+				if (clickInsideElement( e, "file" ) == false) {
+					var selector = document.getElementById("selector"),
+						position = getPosition(e);
+					selector.style.display = "block";
+					selector.style.top = position.y + "px";
+					selector.style.left = position.x + "px";
+					selector.style.height = 0;
+					selector.style.width = 0;
+					dragselecting = true;
+					dragselectstart = position;
+				}
 			});
-		});
-		</script>
-		<script type="text/javascript">
-			var verifyJS = document.getElementById("verifyJS");
-			if (verifyJS.innerHTML == "false" || verifyJS.innerHTML == false) {
-				location.reload();
+			document.addEventListener( "mousemove", function(e) {
+				if (dragselecting) {
+					var selector = document.getElementById("selector"),
+						position = getPosition(e),
+						body = document.body,
+						html = document.documentElement,
+						pageHeight = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight ),
+						pageWidth = Math.max( body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
+					if (position.y > pageHeight) {
+						position.y = pageHeight;
+					}
+					if (position.x > pageWidth) {
+						position.x = pageWidth;
+					}
+					if (position.y < 0) {
+						position.y = 0;
+					}
+					if (position.x < 0) {
+						position.x = 0;
+					}
+					if (position.y > dragselectstart.y) {
+						selector.style.height = (position.y - dragselectstart.y) + "px";
+						selector.style.top = dragselectstart.y + "px";
+					} else {
+						selector.style.top = position.y + "px";
+						selector.style.height = (dragselectstart.y - position.y) + "px";
+					}
+					if (position.x > dragselectstart.x) {
+						selector.style.width = (position.x - dragselectstart.x) + "px";
+						selector.style.left = dragselectstart.x + "px";
+					} else {
+						selector.style.left = position.x + "px";
+						selector.style.width = (dragselectstart.x - position.x) + "px";
+					}
+					var files = document.getElementsByClassName("file");
+					for (i = 0; i < files.length; i++) {
+						if (((files[i].offsetTop >= Math.min(dragselectstart.y, position.y) && files[i].offsetTop <= Math.max(dragselectstart.y, position.y)) || (files[i].offsetTop + files[i].offsetHeight >= Math.min(dragselectstart.y, position.y) && files[i].offsetTop + files[i].offsetHeight <= Math.max(dragselectstart.y, position.y)) || (files[i].offsetTop <= Math.min(dragselectstart.y, position.y) && files[i].offsetTop + files[i].offsetHeight >= Math.max(dragselectstart.y, position.y))) && ((files[i].offsetLeft >= Math.min(dragselectstart.x, position.x) && files[i].offsetLeft <= Math.max(dragselectstart.x, position.x)) || (files[i].offsetLeft + files[i].offsetWidth >= Math.min(dragselectstart.x, position.x) && files[i].offsetLeft + files[i].offsetWidth <= Math.max(dragselectstart.x, position.x)) || (files[i].offsetLeft <= Math.min(dragselectstart.x, position.x) && files[i].offsetLeft + files[i].offsetWidth >= Math.max(dragselectstart.x, position.x)))) {
+							if (files[i].getAttribute("data-selected") == "true") {
+								files[i].classList.remove("selected");
+							} else {
+								files[i].classList.add("selected");
+							}
+						} else {
+							if (files[i].getAttribute("data-selected") == "true") {
+								files[i].classList.add("selected");
+							} else {
+								files[i].classList.remove("selected");
+							}
+						}
+					}
+				}
+			});
+			document.addEventListener( "mouseup", function(e) {
+				var selector = document.getElementById("selector");
+				selector.style.display = "none";
+				dragselecting = false;
+				var files = document.getElementsByClassName("file");
+				for (i = 0; i < files.length; i++) {
+					if (files[i].classList.contains("selected")) {
+						files[i].setAttribute("data-selected","true");
+					} else {
+						files[i].setAttribute("data-selected","false");
+					}
+				}
+			});
+			function getAbsolutePosition(e) {
+			  var posx = 0;
+			  var posy = 0;
+			
+			  if (!e) var e = window.event;
+			
+			  if (e.pageX || e.pageY) {
+			    posx = e.pageX - document.body.scrollLeft - 
+			                       document.documentElement.scrollLeft;
+			    posy = e.pageY - document.body.scrollTop - 
+			                       document.documentElement.scrollTop;
+			  } else if (e.clientX || e.clientY) {
+			    posx = e.clientX;
+			    posy = e.clientY;
+			  }
+			
+			  return {
+			    x: posx,
+			    y: posy
+			  }
 			}
+			function getPosition(e) {
+			  var posx = 0;
+			  var posy = 0;
+			
+			  if (!e) var e = window.event;
+			
+			  if (e.pageX || e.pageY) {
+			    posx = e.pageX;
+			    posy = e.pageY;
+			  } else if (e.clientX || e.clientY) {
+			    posx = e.clientX + document.body.scrollLeft - 
+			                       document.documentElement.scrollLeft;
+			    posy = e.clientY + document.body.scrollTop - 
+			                       document.documentElement.scrollTop;
+			  }
+			
+			  return {
+			    x: posx,
+			    y: posy
+			  }
+			}
+			document.addEventListener( "contextmenu", function(e) {
+				e.preventDefault();
+				var selectedFiles = document.getElementsByClassName("selected");
+				if (selectedFiles.length == 0) {
+					top.document.getElementById("cm-files-cu").style.display = "none";
+					top.document.getElementById("cm-files-de").style.display = "none";
+					top.document.getElementById("cm-files-ed").style.display = "none";
+					top.document.getElementById("cm-files-rn").style.display = "none";
+					top.document.getElementById("cm-files-co").style.display = "none";
+					top.document.getElementById("cm-files-filter-uz").style.display = "none";
+					top.document.getElementById("cm-files-op").style.display = "none";
+					top.document.getElementById("cm-files-on").style.display = "none";
+					top.document.getElementById("cm-files-do").style.display = "block";
+				} else if (selectedFiles.length == 1) {
+					if (selectedFiles[0].getAttribute("data-name") == '..') {
+						top.document.getElementById("cm-files-de").style.display = "none";
+						top.document.getElementById("cm-files-do").style.display = "none";
+						top.document.getElementById("cm-files-rn").style.display = "none";
+						top.document.getElementById("cm-files-co").style.display = "none";
+						top.document.getElementById("cm-files-ed").style.display = "none";
+						top.document.getElementById("cm-files-cu").style.display = "none";
+						top.document.getElementById("cm-files-op").style.display = "block";
+						top.document.getElementById("cm-files-on").style.display = "block";
+						top.document.getElementById("cm-files-filter-uz").style.display = "none";
+					} else {
+						if (selectedFiles[0].getAttribute("data-filetype") !== "dir" && selectedFiles[0].getAttribute("data-filetype") !== ".gxl") {
+							top.document.getElementById("cm-files-ed").style.display = "block";
+							top.document.getElementById("cm-files-op").style.display = "none";
+							top.document.getElementById("cm-files-on").style.display = "none";
+						} else if (selectedFiles[0].getAttribute("data-filetype") == ".gxl") {
+							top.document.getElementById("cm-files-ed").style.display = "none";
+							top.document.getElementById("cm-files-op").style.display = "block";
+							top.document.getElementById("cm-files-on").style.display = "none";
+						} else {
+							top.document.getElementById("cm-files-ed").style.display = "none";
+							top.document.getElementById("cm-files-op").style.display = "block";
+							top.document.getElementById("cm-files-on").style.display = "block";
+						}
+						if (selectedFiles[0].getAttribute("data-filetype") == ".zip") {
+							top.document.getElementById("cm-files-filter-uz").style.display = "block";
+						} else {
+							top.document.getElementById("cm-files-filter-uz").style.display = "none";
+						}
+						top.document.getElementById("cm-files-cu").style.display = "block";
+						top.document.getElementById("cm-files-rn").style.display = "block";
+						top.document.getElementById("cm-files-de").style.display = "block";
+						top.document.getElementById("cm-files-co").style.display = "block";
+						top.document.getElementById("cm-files-do").style.display = "block";
+					}
+				} else {
+					top.document.getElementById("cm-files-cu").style.display = "block";
+					top.document.getElementById("cm-files-de").style.display = "block";
+					top.document.getElementById("cm-files-co").style.display = "block";
+					top.document.getElementById("cm-files-do").style.display = "block";
+					top.document.getElementById("cm-files-ed").style.display = "none";
+					top.document.getElementById("cm-files-rn").style.display = "none";
+					top.document.getElementById("cm-files-filter-uz").style.display = "none";
+					top.document.getElementById("cm-files-op").style.display = "none";
+					top.document.getElementById("cm-files-on").style.display = "none";
+				}
+				if (window.frameElement.id == "desktop-explorer") {
+					top.document.getElementById("cm-files-on").style.display = "none";
+				}
+				top.document.getElementById("cm-files-re").style.display = "block";
+				top.openContextMenu(getAbsolutePosition(e), window.frameElement, false, true);
+				top.setElementFunctionInFrame("cm-files-re", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-pd", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-ed", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-do", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-de", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-rn", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-co", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-pa", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-pr", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-uz", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-op", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-on", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-cu", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-ne-fo", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-ne-fi", window.frameElement);
+				top.setElementFunctionInFrame("cm-files-ne-up", window.frameElement);
+			});
+			
+			function cmAction(action, menuX, menuY) {
+				var loc = document.getElementById("loc").innerHTML,
+					selectedFiles = document.getElementsByClassName("selected"),
+					selectedFileNames = "";
+				
+				for (i = 0; i < selectedFiles.length; i++) {
+					if (selectedFiles[i].getAttribute("data-name") !== "..") {
+						if (selectedFiles[i].getAttribute("data-filetype") == "dir") {
+							var filetype = "dir";
+						} else {
+							var filetype = "file";
+						}
+						selectedFileNames += filetype + ":" + loc + selectedFiles[i].getAttribute("data-name") + ",";
+					}
+				}
+				
+				selectedFileNames = selectedFileNames.slice(0,-1);
+				
+				if (action == "cm-files-re") {
+					location.reload();
+				} else if (action == "cm-files-pd") {
+					if (loc == "/") {
+						window.location = "explorer.php?loc=/";
+					} else {
+						var parentdirectory = loc.split('/').slice(0, -2).join('/');
+						if (parentdirectory == "") {
+							window.location = "explorer.php?loc=/";
+						} else {
+							window.location = "explorer.php?loc=" + parentdirectory + "/";
+						}
+					}
+				} else if (action == "cm-files-ed") {
+					if (selectedFiles.length == 1) {
+						if (selectedFiles[0].getAttribute("data-filetype") !== "dir") {
+							top.createWindow("edit.php?loc=" + loc + "&file=" + selectedFiles[0].getAttribute("data-name"),undefined,undefined,+menuX-300,+menuY);
+						}
+					}
+				} else if (action == "cm-files-do") {
+					if (selectedFiles.length > 0) {
+						window.location = "download.php?loc=" + loc + "&files=" + selectedFileNames;
+					} else {
+						window.location = "download.php?loc=" + loc;
+					}
+				} else if (action == "cm-files-de") {
+					if (selectedFiles.length > 0) {
+						var filesData = selectedFileNames.split(',');
+						top.createWindow("confirm.php?title=Delete " + selectedFiles.length + " items%3F&action=delete.php?loc=" + loc + "%26files=" + selectedFileNames + "%26frameToReload=" + window.frameElement.id,325,190,'center','center',true);
+					}
+				} else if (action == "cm-files-rn") {
+					if (selectedFiles.length == 1) {
+						var selectedName = selectedFiles[0].getElementsByClassName("file__name")[0],
+							preName = selectedName.innerHTML;
+						if (selectedFiles[0].getAttribute("data-name") !== selectedName.innerHTML) {
+							selectedName.innerHTML = selectedFiles[0].getAttribute("data-name");
+						}
+						var oldName = selectedName.innerHTML;
+						if (selectedName.innerHTML !== "..") {
+							selectedName.contentEditable = "true";
+							selectedName.focus();
+							selectedName.spellcheck = false;
+							document.execCommand('selectAll',false,null);
+							selectedName.addEventListener("keydown", function(e) {
+								if (e.keyCode == 13 || e.which == 13) {
+									e.preventDefault();
+									selectedName.blur();
+								}
+							});
+							selectedName.onblur = function() {
+								selectedName.contentEditable = "false";
+								if (selectedName.innerHTML !== oldName) {
+									selectedName.innerHTML = selectedName.innerHTML.replace(/[/\\?%*:|"<>]/g, '');
+									window.location = "rename.php?loc=" + loc + "&file=" + selectedFileNames + "&newname=" + selectedName.innerHTML;
+								} else {
+									selectedName.innerHTML = preName;
+								}
+							}
+						}
+					}
+				} else if (action == "cm-files-ne-fo") {
+					window.location = "create.php?loc=" + loc + "&filetype=dir";
+				} else if (action == "cm-files-ne-fi") {
+					window.location = "create.php?loc=" + loc + "&filetype=file";
+				} else if (action == "cm-files-ne-up") {
+					document.getElementById("file-upload").click();
+				} else if (action == "cm-files-co") {
+					top.document.getElementById("clipboard").innerHTML = selectedFileNames;
+					top.document.getElementById("clipboard").setAttribute("data-action","copy");
+				} else if (action == "cm-files-cu") {
+					top.document.getElementById("clipboard").innerHTML = selectedFileNames;
+					top.document.getElementById("clipboard").setAttribute("data-action","cut");
+				} else if (action == "cm-files-pa") {
+					if (top.document.getElementById("clipboard").innerHTML !== "") {
+						if (top.document.getElementById("clipboard").getAttribute("data-action") == "cut") {
+							window.location = "move.php?files=" + top.document.getElementById("clipboard").innerHTML + "&loc=" + loc;
+						} else {
+							window.location = "copy.php?loc=" + loc + "&files=" + top.document.getElementById("clipboard").innerHTML;
+						}
+					}
+				} else if (action == "cm-files-uz") {
+					if (selectedFiles.length == 1) {
+						window.location = "unzip.php?loc=" + loc + "&file=" + selectedFileNames;
+					}
+				} else if (action == "cm-files-pr") {
+					top.createWindow("properties.php?loc=" + loc + "&files=" + selectedFileNames,275,350,+menuX-137.5,+menuY);
+				} else if (action == "cm-files-op") {
+					if (selectedFiles.length == 1) {
+						selectedFiles[0].click();
+						selectedFiles[0].click();
+					}
+				} else if (action == "cm-files-on") {
+					if (selectedFiles.length == 1) {
+						var filename = selectedFiles[0].getAttribute("data-name");
+						if (filename == '..') {
+							if (loc == '/') {
+								top.createWindow('explorer.php?loc=/');
+							} else {
+								var parentdirectory = loc.split('/').slice(0, -2).join('/');
+								if (parentdirectory == "") {
+									top.createWindow('explorer.php?loc=/',undefined,undefined,+menuX-300,+menuY);
+								} else {
+									top.createWindow('explorer.php?loc=' + parentdirectory + '/',undefined,undefined,+menuX-300,+menuY);
+								}
+							}
+						} else if (filename == '.') {
+							top.createWindow('explorer.php?loc=' + loc,undefined,undefined,+menuX-300,+menuY);
+						} else {
+							top.createWindow('explorer.php?loc=' + loc + filename + '/',undefined,undefined,+menuX-300,+menuY);
+						}
+					}
+				}
+			}
+			document.addEventListener( "keydown", function(e) {
+				if (e.keyCode == 27 || e.which == 27) {
+					top.closeContextMenu();
+				}
+			} );
 		</script>
 	</body>
 </html>

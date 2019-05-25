@@ -22,15 +22,18 @@
 			}
 			closedir($dir);
 		}
-	
-		$files = explode(',', $_GET['files']);
+		if (isset($_GET['files'])) {
+			$files = explode(',', $_GET['files']);
+		} else {
+			$files = array('dir:' . $_GET['loc']);
+		}
 		
 		$zip = new ZipArchive();
 		$zip_name = time().".zip";
 		if($zip->open($zip_name, ZIPARCHIVE::CREATE)!==TRUE){
 			$error .=  "* Sorry ZIP creation failed at this time<br/>";
 		}
-		foreach($files as $file){     
+		foreach($files as $file){
 			$filedata = explode(':', $file);
 			$filepath = '../../' . $filedata[1];
 			$filepathex = explode('/', $filedata[1]);

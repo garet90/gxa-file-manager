@@ -15,12 +15,13 @@
 			}
 			.window {
 				background-color: #A9BCF5;
-				padding: 2px;
+				border: 2px solid #A9BCF5;
 				position: absolute;
 				display: flex;
 				flex-flow: column;
 				min-height: 250px;
 				min-width: 400px;
+				box-shadow: 4px 4px 2px -2px rgba(0,0,0,.5);
 			}
 			.windowheader, .windowcontent {
 				border: 1px solid white;
@@ -33,7 +34,7 @@
 				padding: 8px;
 				font-family: Sans-serif;
 				margin-bottom: 2px;
-				flex: 0 1 auto;
+				flex: 0 0 auto;
 				cursor: move;
 				font-weight: bold;
 			}
@@ -95,7 +96,7 @@
 				border: 2px solid #A9BCF5;
 				box-sizing: border-box;
 				font-size: 10pt;
-				border-radius: 5px;
+				box-shadow: 4px 4px 2px -1px rgba(0,0,0,.5);
 			}
 			.windowicon {
 				display: inline-block;
@@ -120,7 +121,7 @@
 				color: #eeeeee;
 				font-family: "Arial Black", Gadget, sans-serif;
 			}
-			#context-menu {
+			#context-menu, .sub-context-menu {
 				position: absolute;
 				z-index: 1000000;
 				display: none;
@@ -129,7 +130,10 @@
 				border: 1px solid #CDCDCD;
 				width: 200px;
 			}
-			#context-menu.active {
+			.sub-context-menu {
+				z-index: 1000001;
+			}
+			#context-menu.active, .sub-context-menu.active {
 				display: block;
 			}
 			.context-menu__items {
@@ -151,25 +155,69 @@
 				border-bottom: 1px solid #eeeeee;
 				margin: 3px 0;
 			}
+			#background-darken {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				background-color: rgba(0,0,0,.5);
+				display: none;
+			}
+			#clipboard {
+				display: none;
+			}
+			#desktop-explorer {
+				position: absolute;
+				display: none;
+				z-index: 0;
+				top: 0;
+				left: 0;
+				width: 100vw;
+				height: 100vh;
+				border: 0;
+			}
 		</style>
 	</head>
 	<body>
+		<iframe src="about:blank" id="desktop-explorer"></iframe>
+		<div class="interactionshield"></div>
+		<span id="clipboard" data-action=""></span>
 		<div id="bgtext">GXa File Manager</div>
+		<div id="background-darken"></div>
 		<script type="text/javascript">
+			function resolveDarkened(elmnt,frameToReload) {
+				var backgroundDarken = document.getElementById("background-darken");
+				backgroundDarken.style.display = "none";
+				elmnt.remove();
+				if (frameToReload) {
+					document.getElementById(frameToReload).contentWindow.location.reload();
+				}
+			}
 			var windowCount = 0;
-			function createWindow(target,wWidth,wHeight,wX,wY) {
+			function createWindow(target,wWidth,wHeight,wX,wY,imptWindow) {
 				windowCount++;
-				var newWindow = document.createElement('div');
+				var newWindow = document.createElement('div'),
+					backgroundDarken = document.getElementById("background-darken");
 				newWindow.id = "dw-" + windowCount;
 				newWindow.classList.add('window');
 				newWindow.onmousedown = function() { moveToTop(this); }
+				topZIndex++;
 				newWindow.style.zIndex = topZIndex;
+				if (imptWindow) {
+					backgroundDarken.style.display = "block";
+					backgroundDarken.style.zIndex = topZIndex;
+				}
 				if (wWidth == undefined) {
 					wWidth = 600;
+				} else if (wWidth < 600) {
+					newWindow.style.minWidth = wWidth + "px";
 				}
 				newWindow.style.width = wWidth + "px";
 				if (wHeight == undefined) {
 					wHeight = 400;
+				} else if (wHeight < 400) {
+					newWindow.style.minHeight = wHeight + "px";
 				}
 				newWindow.style.height = wHeight + "px";
 				if (wX !== undefined) {
@@ -202,7 +250,11 @@
 				} else {
 					newWindow.style.top = "10px";
 				}
-				newWindow.innerHTML = '<div class="windowheader" id="dw-' + windowCount + '-hd"><div class="windowtitle" id="dw-' + windowCount + '-ti"><div class="windowicon"><i class="fa fa-spinner fa-fw"></i></div>Loading</div><div class="windowclose" onclick="this.parentElement.parentElement.remove();"><i class="fa fa-times"></i></div></div><div class="windowcontent"><div class="interactionshield" id="dw-' + windowCount + '-is"></div><iframe src="' + target + '" class="windowframe" id="dw-' + windowCount + '-cw"></iframe><div class="loadicon" id="dw-' + windowCount + '-li"><i class="fa fa-spinner fa-pulse fa-fw"></i></div></div>';
+				if (imptWindow) {
+					newWindow.innerHTML = '<div class="windowheader" id="dw-' + windowCount + '-hd"><div class="windowtitle" id="dw-' + windowCount + '-ti"><div class="windowicon"><i class="fa fa-spinner fa-fw"></i></div>Loading</div><div class="windowclose" onclick="resolveDarkened(this.parentElement.parentElement);"><i class="fa fa-times"></i></div></div><div class="windowcontent"><div class="interactionshield" id="dw-' + windowCount + '-is"></div><iframe src="' + target + '" class="windowframe" id="dw-' + windowCount + '-cw"></iframe><div class="loadicon" id="dw-' + windowCount + '-li"><i class="fa fa-spinner fa-pulse fa-fw"></i></div></div>';
+				} else {
+					newWindow.innerHTML = '<div class="windowheader" id="dw-' + windowCount + '-hd"><div class="windowtitle" id="dw-' + windowCount + '-ti"><div class="windowicon"><i class="fa fa-spinner fa-fw"></i></div>Loading</div><div class="windowclose" onclick="this.parentElement.parentElement.remove();"><i class="fa fa-times"></i></div></div><div class="windowcontent"><div class="interactionshield" id="dw-' + windowCount + '-is"></div><iframe src="' + target + '" class="windowframe" id="dw-' + windowCount + '-cw"></iframe><div class="loadicon" id="dw-' + windowCount + '-li"><i class="fa fa-spinner fa-pulse fa-fw"></i></div></div>';
+				}
 				document.body.appendChild(newWindow);
 				initiateWindow(document.getElementById('dw-' + windowCount));
 				return document.getElementById('dw-' + windowCount);
@@ -386,26 +438,93 @@
 			}
 			
 			document.addEventListener( "contextmenu", function(e) {
-				var contextMenu = document.getElementById("context-menu"),
-					cmSettings = document.getElementById("cm-settings"),
-					cmSettingsCl = document.getElementById("cm-settings-cl"),
-					cmtWH = clickInsideElement(e, 'windowheader');
+				var cmSettingsCl = document.getElementById("cm-settings-cl"),
+					cmSettingsRe = document.getElementById("cm-settings-re"),
+					cmtWH = clickInsideElement(e, 'window');
 				e.preventDefault();
-				var position = getPosition(e);
-				contextMenu.classList.add("active");
-				changeISStatus(true);
-				contextMenu.style.top = position.y + "px";
-				contextMenu.style.left = position.x + "px";
 				if (cmtWH !== false) {
-					cmSettings.style.display = "block";
+					openContextMenu(getPosition(e),undefined,true);
 					cmSettingsCl.onclick = function() {
-						cmtWH.parentElement.remove();
+						cmtWH.remove();
+						closeContextMenu();
+					}
+					var selectedFrame = cmtWH.getElementsByClassName("windowcontent")[0].getElementsByClassName("windowframe")[0];
+					cmSettingsRe.onclick = function() {
+						selectedFrame.src = selectedFrame.contentWindow.location.href;
 						closeContextMenu();
 					}
 				} else {
-					cmSettings.style.display = "none";
+					openContextMenu(getPosition(e),undefined,false);
 				}
 			} );
+			function openContextMenu(position, frame, showSettings, showFiles, showEdit) {
+				var contextMenu = document.getElementById("context-menu"),
+					cmSettings = document.getElementById("cm-settings"),
+					cmFiles = document.getElementById("cm-files"),
+					cmEdit = document.getElementById("cm-edit"),
+					positionTop = 0;
+					positionLeft = 0;
+				
+				if (showSettings) {
+					cmSettings.style.display = "block";
+				} else {
+					cmSettings.style.display = "none";
+				}
+				if (showFiles) {
+					cmFiles.style.display = "block";
+				} else {
+					cmFiles.style.display = "none";
+				}
+				if (showEdit) {
+					cmEdit.style.display = "block";
+				} else {
+					cmEdit.style.display = "none";
+				}
+				
+				if (document.getElementById("background-darken").style.display !== "block") {
+					contextMenu.classList.add("active");
+				}
+				if (frame !== undefined) {
+					if (frame.id == "desktop-explorer") {
+						positionTop = position.y;
+						positionLeft = position.x;
+					} else {
+						positionTop = position.y + +frame.parentElement.parentElement.style.top.slice(0, -2) + 4 + +frame.parentElement.parentElement.getElementsByClassName("windowheader")[0].offsetHeight;
+						positionLeft = position.x + +frame.parentElement.parentElement.style.left.slice(0, -2) + 2;
+					}
+				} else {
+					positionTop = position.y;
+					positionLeft = position.x;
+				}
+				
+				if (positionTop + contextMenu.offsetHeight > window.innerHeight) {
+					if (positionTop - contextMenu.offsetHeight > 0) {
+						positionTop = positionTop - contextMenu.offsetHeight;
+					} else {
+						positionTop = window.innerHeight - contextMenu.offsetHeight;
+					}
+				}
+				if (positionLeft + contextMenu.offsetWidth > window.innerWidth) {
+					positionLeft = window.innerWidth - contextMenu.offsetWidth;
+				}
+				
+				contextMenu.style.top = positionTop + "px";
+				contextMenu.style.left = positionLeft + "px";
+			}
+			function openSubContextMenu(menuId, elmnt) {
+				window.setTimeout(function() {
+					if (elmnt.getAttribute("data-mouseover") == "true") {
+						var menu = document.getElementById(menuId);
+						menu.classList.add("active");
+						menu.style.top = +elmnt.parentElement.parentElement.parentElement.style.top.slice(0,-2) + elmnt.offsetTop + "px";
+						if (+elmnt.parentElement.parentElement.parentElement.style.left.slice(0,-2) + +elmnt.parentElement.parentElement.parentElement.offsetWidth + menu.offsetWidth > window.innerWidth) {
+							menu.style.left = +elmnt.parentElement.parentElement.parentElement.style.left.slice(0,-2) - +menu.offsetWidth + "px";
+						} else {
+							menu.style.left = +elmnt.parentElement.parentElement.parentElement.style.left.slice(0,-2) + +elmnt.parentElement.parentElement.parentElement.offsetWidth + "px";
+						}
+					}
+				}, 250);
+			}
 			document.addEventListener( "mousedown", function(e) {
 				if (clickInsideElement( e, "context-menu__item" ) == false) {
 					closeContextMenu();
@@ -417,36 +536,174 @@
 				}
 			} );
 			function closeContextMenu() {
-				var contextMenu = document.getElementById("context-menu");
+				var contextMenu = document.getElementById("context-menu"),
+					subContextMenus = document.getElementsByClassName("sub-context-menu");
 				contextMenu.classList.remove("active");
-				changeISStatus(false);
+				for (i = 0; i < subContextMenus.length; i++) {
+					subContextMenus[i].classList.remove("active");
+				}
+			}
+			function setElementFunctionInFrame(targetID, frame) {
+				var contextMenu = document.getElementById("context-menu");
+				document.getElementById(targetID).onclick = function() {
+					frame.contentWindow.cmAction(targetID,contextMenu.style.left.slice(0,-2),contextMenu.style.top.slice(0,-2));
+					closeContextMenu();
+				}
 			}
 			
 			<?php
 				if (isset($_COOKIE['user']) && isset($_COOKIE['password'])) {
-					if ($_COOKIE['user'] !== '' && $_COOKIE['password'] !== '') {
-						echo "createWindow('explorer.php?loc=/',600,400,'center','center');";
-					} else {
+					if ($_COOKIE['user'] == '' && $_COOKIE['password'] == '') {
 						echo "createWindow('login.php',400,250,'center','center');";
+					} else {
+						echo "loggedIn();";
 					}
 				} else {
 					echo "createWindow('login.php',400,250,'center','center');";
 				}
 			?>
+			function loggedIn() {
+				var desktopExplorer = document.getElementById("desktop-explorer");
+				desktopExplorer.src = "explorer.php?loc=/admin/desktop/";
+				desktopExplorer.style.display = "block";
+			}
 		</script>
 		<nav id="context-menu">
 			<ul class="context-menu__items">
+				<div id="cm-files" class="context-menu__filter">
+					<li class="context-menu__item" id="cm-files-op">
+						<span class="context-menu__link">
+							Open
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-on">
+						<span class="context-menu__link">
+							Open In New Window
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-re">
+						<span class="context-menu__link">
+							Refresh
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-pd">
+						<span class="context-menu__link">
+							Parent Directory
+						</span>
+					</li>
+					<div class="context-menu__break"></div>
+					<li class="context-menu__item" id="cm-files-ne" data-mouseover="false" onmouseover="this.setAttribute('data-mouseover','true'); openSubContextMenu('context-menu-new',this);" onmouseout="this.setAttribute('data-mouseover','false');">
+						<span class="context-menu__link">
+							New
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-de">
+						<span class="context-menu__link">
+							Delete
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-ed">
+						<span class="context-menu__link">
+							Edit
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-do">
+						<span class="context-menu__link">
+							Download
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-rn">
+						<span class="context-menu__link">
+							Rename
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-cu">
+						<span class="context-menu__link">
+							Cut
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-co">
+						<span class="context-menu__link">
+							Copy
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-files-pa">
+						<span class="context-menu__link">
+							Paste
+						</span>
+					</li>
+					<div class="context-menu__filter" id="cm-files-filter-uz">
+						<div class="context-menu__break"></div>
+						<li class="context-menu__item" id="cm-files-uz">
+							<span class="context-menu__link">
+								Extract
+							</span>
+						</li>
+					</div>
+					<div class="context-menu__break"></div>
+					<li class="context-menu__item" id="cm-files-pr">
+						<span class="context-menu__link">
+							Properties
+						</span>
+					</li>
+					<div class="context-menu__break"></div>
+				</div>
+				<div id="cm-edit" class="context-menu__filter">
+					<li class="context-menu__item" id="cm-edit-sa">
+						<span class="context-menu__link">
+							Save
+						</span>
+					</li>
+					<div class="context-menu__break"></div>
+					<li class="context-menu__item" id="cm-edit-un">
+						<span class="context-menu__link">
+							Undo
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-edit-re">
+						<span class="context-menu__link">
+							Redo
+						</span>
+					</li>
+					<div class="context-menu__break"></div>
+					<li class="context-menu__item" id="cm-edit-cu">
+						<span class="context-menu__link">
+							Cut
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-edit-co">
+						<span class="context-menu__link">
+							Copy
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-edit-pa">
+						<span class="context-menu__link">
+							Paste
+						</span>
+					</li>
+					<li class="context-menu__item" id="cm-edit-se">
+						<span class="context-menu__link">
+							Select All
+						</span>
+					</li>
+					<div class="context-menu__break"></div>
+				</div>
 				<div id="cm-settings" class="context-menu__filter">
 					<li class="context-menu__item" id="cm-settings-cl">
 						<span class="context-menu__link">
 							Close Window
 						</span>
 					</li>
+					<li class="context-menu__item" id="cm-settings-re">
+						<span class="context-menu__link">
+							Reload
+						</span>
+					</li>
 					<div class="context-menu__break"></div>
 				</div>
 				<li class="context-menu__item" onclick="createWindow('explorer.php?loc=/',600,400,+this.parentElement.parentElement.style.left.slice(0, -2)-300,+this.parentElement.parentElement.style.top.slice(0, -2)-200); closeContextMenu();">
 					<span class="context-menu__link">
-						New Window
+						File Explorer
 					</span>
 				</li>
 				<li class="context-menu__item" onclick="createWindow('info.php',600,400,+this.parentElement.parentElement.style.left.slice(0, -2)-300,+this.parentElement.parentElement.style.top.slice(0, -2)-200); closeContextMenu();">
@@ -462,6 +719,25 @@
 				<li class="context-menu__item" onclick="window.location = 'logout.php';">
 					<span class="context-menu__link">
 						Logout
+					</span>
+				</li>
+			</ul>
+		</nav>
+		<nav id="context-menu-new" class="sub-context-menu">
+			<ul class="context-menu__items">
+				<li class="context-menu__item" id="cm-files-ne-fo">
+					<span class="context-menu__link">
+						Folder
+					</span>
+				</li>
+				<li class="context-menu__item" id="cm-files-ne-fi">
+					<span class="context-menu__link">
+						File
+					</span>
+				</li>
+				<li class="context-menu__item" id="cm-files-ne-up">
+					<span class="context-menu__link">
+						Upload
 					</span>
 				</li>
 			</ul>

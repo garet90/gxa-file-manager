@@ -24,19 +24,18 @@
 			$splitpath = explode(":", $file);
 			$splitdir = explode("/", $splitpath[1]);
 			$filename = array_pop($splitdir);
-			$endpath = join("/", $splitdir);
-			$endfname = "copy." . $filename;
+			$endpath = $_GET['loc'];
 			if ($splitpath[0] == "file") {
-				if (file_exists('../../' . $endpath . '/' . $endfname)) {
-					$errors = $errors . 'file "' . $endpath . '/' . $endfname . '" already exists<br />';
+				if (file_exists('../../' . $endpath . '/' . $filename)) {
+					$errors = $errors . 'file "' . $endpath . '/' . $filename . '" already exists<br />';
 				} else {
-					copy ('../../' . $splitpath[1], '../../' . $endpath . '/' . $endfname);
+					copy ('../../' . $splitpath[1], '../../' . $endpath . '/' . $filename);
 				}
 			} else {
-				if (file_exists('../../' . $endpath . '/' . $endfname . '/')) {
-					$errors = $errors . 'directory "' . $endpath . '/' . $endfname . '/" already exists<br />';
+				if (file_exists('../../' . $endpath . '/' . $filename . '/')) {
+					$errors = $errors . 'directory "' . $endpath . '/' . $filename . '/" already exists<br />';
 				} else {
-					copy_directory('../../' . $splitpath[1], '../../' . $endpath . '/' . $endfname);
+					copy_directory('../../' . $splitpath[1], '../../' . $endpath . '/' . $filename);
 				}
 			}
 		}
