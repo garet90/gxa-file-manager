@@ -22,15 +22,7 @@
 		<style>
 			body,html {
 				font-family: Sans-serif;
-				font-size: 10pt;
 				color: #1C1C1C;
-			}
-			.title, .subheader {
-				text-align: center;
-				color: #555;
-			}
-			.subheader {
-				margin: 10px;
 			}
 			table {
 				word-break: break-all;
@@ -47,11 +39,29 @@
 			tr:nth-child(even) {
 				background-color: #eeeeee;
 			}
+			.icon {
+				font-size: 40px;
+				text-align: center;
+				margin-bottom: 5px;
+			}
+			.name {
+				display: inline-block;
+				background-color: rgba(235,235,235,.75);
+				padding: 5px;
+				border-radius: 5px;
+				font-family: Sans-serif;
+				font-size: 10pt;
+				left: 50%;
+				position: relative;
+				transform: translateX(-50%);
+				margin-bottom: 10px;
+			}
 		</style>
+		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
 	<body>
-		<h1 class="title"><?php echo $_SERVER['HTTP_HOST']; ?></h1>
-		<h2 class="subheader">General</h2>
+		<div class="icon"><i class="fa fa-info" aria-hidden="true"></i></div>
+		<div class="name"><?php echo $_SERVER['HTTP_HOST']; ?></div>
 		<table>
 			<tr>
 				<th>Property</th>
@@ -73,13 +83,6 @@
 				<td>Server Port</td>
 				<td><?php echo $_SERVER["SERVER_PORT"]; ?></td>
 			</tr>
-		</table>
-		<h2 class="subheader">Software</h2>
-		<table>
-			<tr>
-				<th>Property</th>
-				<th>Value</th>
-			</tr>
 			<tr>
 				<td>PHP Version</td>
 				<td><?php echo phpversion(); ?></td>
@@ -96,13 +99,6 @@
 			<tr>
 				<td>GXa File Manager Version</td>
 				<td><?php echo $gxaversion; ?></td>
-			</tr>
-		</table>
-		<h2 class="subheader">Disk</h2>
-		<table>
-			<tr>
-				<th>Property</th>
-				<th>Value</th>
 			</tr>
 			<tr>
 				<td>Drive Label</td>
@@ -125,5 +121,40 @@
 				<td><?php echo round((disk_free_space('/') / disk_total_space('/')),4)*100; ?>%</td>
 			</tr>
 		</table>
+		<script type="text/javascript">
+			function getAbsolutePosition(e) {
+			  var posx = 0;
+			  var posy = 0;
+			
+			  if (!e) var e = window.event;
+			
+			  if (e.pageX || e.pageY) {
+			    posx = e.pageX - document.body.scrollLeft - 
+			                       document.documentElement.scrollLeft;
+			    posy = e.pageY - document.body.scrollTop - 
+			                       document.documentElement.scrollTop;
+			  } else if (e.clientX || e.clientY) {
+			    posx = e.clientX;
+			    posy = e.clientY;
+			  }
+			
+			  return {
+			    x: posx,
+			    y: posy
+			  }
+			}
+			document.addEventListener( "contextmenu", function(e) {
+				e.preventDefault();
+				top.openContextMenu(getAbsolutePosition(e), window.frameElement);
+			} );
+			document.addEventListener( "keydown", function(e) {
+				if (e.keyCode == 27 || e.which == 27) {
+					top.closeContextMenu();
+				}
+			} );
+			document.addEventListener( "click", function(e) {
+				top.closeContextMenu();
+			} );
+		</script>
 	</body>
 </html>

@@ -17,13 +17,9 @@
 			}
 		}
 		if ($errors == '') {
-			if (isset($_GET['toRefresh'])) {
-				header('location: explorer.php?loc=' . $_GET['loc'] . '&toRefresh=' . $_GET['toRefresh']);
-			} else {
-				header('location: explorer.php?loc=' . $_GET['loc']);
-			}
+			header('location: about:blank');
 		} else {
-			header('location: explorer.php?loc=' . $_GET['loc'] . '&errors=' . $errors);
+			header('location: about:blank');
 		}
 	}
 ?>

@@ -3,7 +3,11 @@
 	if ($usercheck && $passcheck) { } else {
 		die();
 	}
-	$filecontents = file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file']);
+	if (file_exists ('../../' . $_GET['loc'] . '/' . $_GET['file'])) {
+		$filecontents = file_get_contents ('../../' . $_GET['loc'] . '/' . $_GET['file']);
+	} else {
+		$filecontents = '';
+	}
 	function formatBytes($size, $precision = 2)
 	{
 		$base = log($size, 1024);

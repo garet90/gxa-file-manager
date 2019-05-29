@@ -27,10 +27,6 @@
 		}
 		return $result;
 	}
-	if (isset($_GET['toRefresh'])) {
-		echo "<script>top.document.getElementById('" . $_GET['toRefresh'] . "').contentWindow.location.reload(); window.location = 'explorer.php?loc=" . $_GET['loc'] . "';</script>";
-		die();
-	}
 ?>
 <!DOCTYPE html>
 <html ondrop="drop(event)" ondragover="allowDrop(event)">
@@ -43,6 +39,10 @@
 				margin: 0;
 				padding: 0;
 				min-height: 100%;
+				user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				-webkit-user-select: none;
 			}
 			footer {
 				position: fixed;
@@ -89,6 +89,9 @@
 				background-color: #E0E6F8;
 				border-color: #CED8F6;
 			}
+			.file.faded {
+				border: 1px dashed #CED8F6;
+			}
 			.file__icon {
 				font-size: 40px;
 				color: #424242;
@@ -124,9 +127,17 @@
 				box-sizing: border-box;
 				display: none;
 			}
+			#action-frame {
+				display: none;
+			}
+			#status {
+				float: right;
+				display: inline-block;
+			}
 		</style>
 	</head>
 	<body>
+		<iframe src="about:blank" id="action-frame" data-idle="true"></iframe>
 		<form method="post" action="upload.php" enctype="multipart/form-data">
 			<input type="hidden" name="loc" value="<?php echo $_GET['loc']; ?>"></input>
 			<input type="file" name="file" style="display: none;" id="file-upload" onchange="this.parentElement.submit();"></input>
@@ -134,77 +145,90 @@
 		<div id="files">
 			<?php
 				$path = '../../' . $_GET['loc'];
-				$files = scandir($path);
-				$filecount = 0;
-				$foldercount = 0;
-				$totalsize = 0;
-				unset($files[0]);
-				if ($_GET['loc'] == '/') {
-					unset($files[1]);
-				}
-				foreach ($files as $file) {
-					$filetype = '';
-					$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
-					$filetitle = '';
-					$finalname = $file;
-					$linkTo = '';
-					if (is_dir ($path . $file)) {
-						$filetype = 'dir';
-						$fileicon = '<i class="fa fa-folder-o" aria-hidden="true"></i>';
-						$filetitle = $file . '
+				if (file_exists($path)) {
+					$files = scandir($path);
+					$filecount = 0;
+					$foldercount = 0;
+					$totalsize = 0;
+					unset($files[0]);
+					if ($_GET['loc'] == '/') {
+						unset($files[1]);
+					}
+					foreach ($files as $file) {
+						$filetype = '';
+						$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+						$filetitle = '';
+						$finalname = $file;
+						$linkTo = '';
+						if (is_dir ($path . $file)) {
+							$filetype = 'dir';
+							$fileicon = '<i class="fa fa-folder-o" aria-hidden="true"></i>';
+							$filetitle = $file . '
 Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
-						$foldercount = $foldercount + 1;
-					} else {
-						$expfilename = explode('.',$file);
-						$extension = end($expfilename);
-						$filetype = '.' . $extension;
-						if (count($expfilename) == 1) {
-							$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
-						} else if ($extension == "png" || $extension == "jpg" || $extension == "gif" || $extension == "bmp" || $extension == "ico") {
-							$fileicon = '<i class="fa fa-file-image-o" aria-hidden="true"></i>';
-						} else if ($extension == "txt") {
-							$fileicon = '<i class="fa fa-file-text-o" aria-hidden="true"></i>';
-						} else if ($extension == "php" || $extension == "html" || $extension == "xml" || $extension == "js" || $extension == "css") {
-							$fileicon = '<i class="fa fa-file-code-o" aria-hidden="true"></i>';
-						} else if ($extension == "wav" || $extension == "mp3") {
-							$fileicon = '<i class="fa fa-file-audio-o" aria-hidden="true"></i>';
-						} else if ($extension == "xlsx" || $extension == "xlsm") {
-							$fileicon = '<i class="fa fa-file-excel-o" aria-hidden="true"></i>';
-						} else if ($extension == "pdf") {
-							$fileicon = '<i class="fa fa-file-pdf-o" aria-hidden="true"></i>';
-						} else if ($extension == "docx" || $extension == "docm") {
-							$fileicon = '<i class="fa fa-file-word-o" aria-hidden="true"></i>';
-						} else if ($extension == "tar" || $extension == "zip" || $extension == "gz" || $extension == "7z" || $extension == "s7z" || $extension == "jar" || $extension == "rar" || $extension == "tgz") {
-							$fileicon = '<i class="fa fa-file-archive-o" aria-hidden="true"></i>';
-						} else if ($extension == "pptx" || $extension == "pptm") {
-							$fileicon = '<i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>';
-						} else if ($extension == "mov" || $extension == "qt" || $extension == "mp4" || $extension == "m4p" || $extension == "m4v") {
-							$fileicon = '<i class="fa fa-file-video-o" aria-hidden="true"></i>';
-						} else if ($extension == "gxl") {
-							$linkData = explode(':',file_get_contents($path . $file));
-							$fileicon = '<i class="fa ' . $linkData[0] . '" aria-hidden="true"></i>';
-							$linkTo = $linkData[1];
-							$finalname = substr($file,0,-4);
+							if ($file !== "..") {
+								$foldercount = $foldercount + 1;
+							}
 						} else {
-							$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
-						}
-						$filetitle = $file . '
+							$expfilename = explode('.',$file);
+							$extension = end($expfilename);
+							$filetype = '.' . $extension;
+							if (count($expfilename) == 1) {
+								$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+							} else if ($extension == "png" || $extension == "jpg" || $extension == "gif" || $extension == "bmp" || $extension == "ico") {
+								$fileicon = '<i class="fa fa-file-image-o" aria-hidden="true"></i>';
+							} else if ($extension == "txt") {
+								$fileicon = '<i class="fa fa-file-text-o" aria-hidden="true"></i>';
+							} else if ($extension == "php" || $extension == "html" || $extension == "xml" || $extension == "js" || $extension == "css") {
+								$fileicon = '<i class="fa fa-file-code-o" aria-hidden="true"></i>';
+							} else if ($extension == "wav" || $extension == "mp3") {
+								$fileicon = '<i class="fa fa-file-audio-o" aria-hidden="true"></i>';
+							} else if ($extension == "xlsx" || $extension == "xlsm") {
+								$fileicon = '<i class="fa fa-file-excel-o" aria-hidden="true"></i>';
+							} else if ($extension == "pdf") {
+								$fileicon = '<i class="fa fa-file-pdf-o" aria-hidden="true"></i>';
+							} else if ($extension == "docx" || $extension == "docm") {
+								$fileicon = '<i class="fa fa-file-word-o" aria-hidden="true"></i>';
+							} else if ($extension == "tar" || $extension == "zip" || $extension == "gz" || $extension == "7z" || $extension == "s7z" || $extension == "jar" || $extension == "rar" || $extension == "tgz") {
+								$fileicon = '<i class="fa fa-file-archive-o" aria-hidden="true"></i>';
+							} else if ($extension == "pptx" || $extension == "pptm") {
+								$fileicon = '<i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>';
+							} else if ($extension == "mov" || $extension == "qt" || $extension == "mp4" || $extension == "m4p" || $extension == "m4v") {
+								$fileicon = '<i class="fa fa-file-video-o" aria-hidden="true"></i>';
+							} else if ($extension == "gxl") {
+								$linkData = explode(':',file_get_contents($path . $file));
+								$fileicon = '<i class="fa ' . $linkData[0] . '" aria-hidden="true"></i>';
+								$linkTo = $linkData[1];
+								$finalname = substr($file,0,-4);
+							} else {
+								$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+							}
+							$filetitle = $file . '
 Size: ' . formatBytes(filesize($path . $file)) . '
 Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
-						$filecount = $filecount + 1;
-						$totalsize += filesize($path . $file);
+							$filecount = $filecount + 1;
+							$totalsize += filesize($path . $file);
+						}
+						$fileorder = "0";
+						if ($filetype == "dir") {
+							$fileorder = "-1";
+						}
+						echo '<div data-naming="false" data-selected="false" data-name="' . $file . '" data-filetype="' . $filetype . '" ondragstart="drag(event)" data-continue="false" draggable="true" class="file" title="' . $filetitle . '" style="order: ' . $fileorder . '" onmousedown="selectfile(this,false)" onclick="selectfile(this,true)" data-linkto="' . $linkTo . '"><div class="file__icon">' . $fileicon . '</div><div class="file__name" contenteditable="false">' . $finalname . '</div></div>';
 					}
-					$fileorder = "0";
-					if ($filetype == "dir") {
-						$fileorder = "-1";
-					}
-					echo '<div data-selected="false" data-name="' . $file . '" data-filetype="' . $filetype . '" ondragstart="drag(event)" data-continue="false" draggable="true" class="file" title="' . $filetitle . '" style="order: ' . $fileorder . '" onmousedown="selectfile(this,false)" onclick="selectfile(this,true)" data-linkto="' . $linkTo . '"><div class="file__icon">' . $fileicon . '</div><div class="file__name" contenteditable="false">' . $finalname . '</div></div>';
+				} else {
+					echo 'Folder doesn\'t exist!';
 				}
 			?>
 		</div>
 		<div id="selector"></div>
 		<footer>
-			<span id="loc"><?php echo $_GET['loc']; ?></span><span style="padding-left: 4px;">- <?php echo $foldercount; ?> folders, <?php echo $filecount; ?> files, a total of <?php echo formatBytes($totalsize); ?></span>
+			<?php
+				if (!isset($foldercount) && !isset($filecount)) {
+					$foldercount = "#";
+					$filecount = "#";
+				}
+			?>
+			<span id="loc"><?php echo $_GET['loc']; ?></span><span style="padding-left: 4px;" id="folderInfo" data-foc="<?php echo $foldercount; ?>" data-fic="<?php echo $filecount; ?>">- <?php echo $foldercount; ?> folders and <?php echo $filecount; ?> files</span>
+			<div id="status"></div>
 		</footer>
 		<script type="text/javascript">
 			function allowDrop(ev) {
@@ -230,7 +254,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				selectedFileNames = selectedFileNames.slice(0,-1);
 				
 				ev.dataTransfer.setData("files", selectedFileNames);
-				ev.dataTransfer.setData("toRefresh", window.frameElement.id);
+				ev.dataTransfer.setData("sender", window.frameElement.id);
 				ev.dataTransfer.setData("loc", loc);
 			}
 			
@@ -238,7 +262,17 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				ev.preventDefault();
 				var loc = document.getElementById("loc").innerHTML;
 				if (ev.dataTransfer.getData("loc") !== loc) {
-					window.location = "move.php?files=" + ev.dataTransfer.getData("files") + "&loc=" + loc + "&toRefresh=" + ev.dataTransfer.getData("toRefresh");
+					frameAction("move.php?files=" + ev.dataTransfer.getData("files") + "&loc=" + loc, "Moving...");
+					var filesMoved = ev.dataTransfer.getData("files").split(',');
+					filesMoved.forEach(function(file) {
+						if (file !== "") {
+							var fileSplit = file.split(':'),
+								filePath = fileSplit[1].split('/'),
+								fileName = filePath[filePath.length-1];
+							newLocalFile(fileName,fileSplit[0]);
+						}
+					});
+					top.document.getElementById(ev.dataTransfer.getData("sender")).contentWindow.removeFilesByString(ev.dataTransfer.getData("files"));
 				}
 			}
 		</script>
@@ -249,6 +283,11 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				document.getElementsByClassName("file")[0].remove();
 				document.getElementById("files").style.flexDirection = "column";
 				document.getElementById("files").style.justifyContent = "left";
+				document.getElementById("files").style.maxHeight = "100vh";
+				document.getElementById("files").style.margin = "0";
+				document.getElementById("files").style.width = "0";
+			} else {
+				top.document.getElementById("cm-files-pd").style.display = "block";
 			}
 		</script>
 		<script type="text/javascript">
@@ -277,43 +316,45 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 							if (elmnt.getAttribute("data-continue") == "false") {
 								elmnt.setAttribute("data-continue","true");
 							} else {
-								var filetype = elmnt.getAttribute("data-filetype"),
-									filename = elmnt.getAttribute("data-name");
-								if (filetype == "dir") {
-									if (filename == ".") {
-										window.location = "?loc=" + loc;
-									} else if (filename == "..") {
-										if (loc == "/") {
-											window.location = "?loc=/";
-										} else {
-											var parentdirectory = loc.split('/').slice(0, -2).join('/');
-											if (parentdirectory == "") {
-												if (window.frameElement.id !== "desktop-explorer") {
-													window.location = "?loc=/";
-												} else {
-													top.createWindow('explorer.php?loc=/');
-												}
+								if (elmnt.getAttribute("data-naming") == "false") {
+									var filetype = elmnt.getAttribute("data-filetype"),
+										filename = elmnt.getAttribute("data-name");
+									if (filetype == "dir") {
+										if (filename == ".") {
+											window.location = "?loc=" + loc;
+										} else if (filename == "..") {
+											if (loc == "/") {
+												window.location = "?loc=/";
 											} else {
-												if (window.frameElement.id !== "desktop-explorer") {
-													window.location = "?loc=" + parentdirectory + "/";
+												var parentdirectory = loc.split('/').slice(0, -2).join('/');
+												if (parentdirectory == "") {
+													if (window.frameElement.id !== "desktop-explorer") {
+														window.location = "?loc=/";
+													} else {
+														top.createWindow('explorer.php?loc=/');
+													}
 												} else {
-													top.createWindow('explorer.php?loc=' + parentdirectory + '/');
+													if (window.frameElement.id !== "desktop-explorer") {
+														window.location = "?loc=" + parentdirectory + "/";
+													} else {
+														top.createWindow('explorer.php?loc=' + parentdirectory + '/');
+													}
 												}
+											}
+										} else {
+											if (window.frameElement.id !== "desktop-explorer") {
+												window.location = "?loc=" + loc + filename + "/";
+											} else {
+												top.createWindow('explorer.php?loc=' + loc + filename + '/');
 											}
 										}
 									} else {
-										if (window.frameElement.id !== "desktop-explorer") {
-											window.location = "?loc=" + loc + filename + "/";
-										} else {
-											top.createWindow('explorer.php?loc=' + loc + filename + '/');
+										if (filetype == ".gxl") {
+											top.createWindow(elmnt.getAttribute("data-linkto"));
 										}
 									}
-								} else {
-									if (filetype == ".gxl") {
-										top.createWindow(elmnt.getAttribute("data-linkto"));
-									}
+									elmnt.setAttribute("data-continue","false");
 								}
-								elmnt.setAttribute("data-continue","false");
 							}
 						}
 					} else {
@@ -408,8 +449,24 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 						files[i].classList.add("selected");
 					}
 				}
+				if (keys[17] && keys[67]) {
+					cmAction("cm-files-co");
+				}
+				if (keys[17] && keys[88]) {
+					cmAction("cm-files-cu");
+				}
+				if (keys[17] && keys[86]) {
+					cmAction("cm-files-pa");
+				}
 				if (keys[46]) {
 					cmAction("cm-files-de");
+				}
+				if (keys[13]) {
+					var selectedFiles = document.getElementsByClassName("selected");
+					if (selectedFiles.length == 1) {
+						selectedFiles[0].click();
+						selectedFiles[0].click();
+					}
 				}
 			}
 			document.onkeyup = function(e) {
@@ -602,8 +659,14 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					top.document.getElementById("cm-files-op").style.display = "none";
 					top.document.getElementById("cm-files-on").style.display = "none";
 				}
+				if (document.getElementById("loc").innerHTML == "/") {
+					top.document.getElementById("cm-files-pd").style.display = "none";
+				} else {
+					top.document.getElementById("cm-files-pd").style.display = "block";
+				}
 				if (window.frameElement.id == "desktop-explorer") {
 					top.document.getElementById("cm-files-on").style.display = "none";
+					top.document.getElementById("cm-files-pd").style.display = "none";
 				}
 				top.document.getElementById("cm-files-re").style.display = "block";
 				top.openContextMenu(getAbsolutePosition(e), window.frameElement, false, true);
@@ -682,6 +745,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 						}
 						var oldName = selectedName.innerHTML;
 						if (selectedName.innerHTML !== "..") {
+							selectedFiles[0].setAttribute("data-naming","true");
 							selectedName.contentEditable = "true";
 							selectedName.focus();
 							selectedName.spellcheck = false;
@@ -696,7 +760,52 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 								selectedName.contentEditable = "false";
 								if (selectedName.innerHTML !== oldName) {
 									selectedName.innerHTML = selectedName.innerHTML.replace(/[/\\?%*:|"<>]/g, '');
-									window.location = "rename.php?loc=" + loc + "&file=" + selectedFileNames + "&newname=" + selectedName.innerHTML;
+									if (getFileByName(selectedName.innerHTML) || selectedName.innerHTML == "") {
+										selectedName.innerHTML = oldName;
+									} else {
+										frameAction("rename.php?loc=" + loc + "&file=" + selectedFileNames + "&newname=" + selectedName.innerHTML, "Renaming...");
+										window.setTimeout(function() {
+											selectedName.parentElement.setAttribute("data-naming","false");
+										},500);
+										selectedName.parentElement.setAttribute("data-name", selectedName.innerHTML);
+										var today = new Date();
+										var filetime = pad_with_zeroes((today.getMonth()+1),2) + "/" + pad_with_zeroes(today.getDate(),2) + "/" + pad_with_zeroes(today.getFullYear(),4) + ", " + pad_with_zeroes(today.getHours(),2) + ":" + pad_with_zeroes(today.getMinutes(),2) + ":" + pad_with_zeroes(today.getSeconds(),2);
+										selectedName.parentElement.title = selectedName.innerHTML + "\r\nModified: " + filetime;
+										if (selectedName.parentElement.getAttribute("data-filetype") !== "dir") {
+											var selectedIcon = selectedName.parentElement.getElementsByClassName("file__icon")[0];
+											var dotSplit = selectedName.innerHTML.split('.');
+											if (dotSplit.length == 1) {
+												selectedIcon.innerHTML = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+											} else {
+												var extension = dotSplit[dotSplit.length-1];
+												if (extension == "png" || extension == "jpg" || extension == "gif" || extension == "bmp" || extension == "ico") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-image-o" aria-hidden="true"></i>';
+												} else if (extension == "txt") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-text-o" aria-hidden="true"></i>';
+												} else if (extension == "php" || extension == "html" || extension == "xml" || extension == "js" || extension == "css") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-code-o" aria-hidden="true"></i>';
+												} else if (extension == "wav" || extension == "mp3") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-audio-o" aria-hidden="true"></i>';
+												} else if (extension == "xlsx" || extension == "xlsm") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-excel-o" aria-hidden="true"></i>';
+												} else if (extension == "pdf") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-pdf-o" aria-hidden="true"></i>';
+												} else if (extension == "docx" || extension == "docm") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-word-o" aria-hidden="true"></i>';
+												} else if (extension == "tar" || extension == "zip" || extension == "gz" || extension == "7z" || extension == "s7z" || extension == "jar" || extension == "rar" || extension == "tgz") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-archive-o" aria-hidden="true"></i>';
+												} else if (extension == "pptx" || extension == "pptm") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>';
+												} else if (extension == "mov" || extension == "qt" || extension == "mp4" || extension == "m4p" || extension == "m4v") {
+													selectedIcon.innerHTML = '<i class="fa fa-file-video-o" aria-hidden="true"></i>';
+												} else if (extension == "gxl") {
+													selectedIcon.innerHTML = '<i class="fa fa-question" aria-hidden="true"></i>';
+												} else {
+													selectedIcon.innerHTML = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+												}
+											}
+										}
+									}
 								} else {
 									selectedName.innerHTML = preName;
 								}
@@ -704,9 +813,21 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 						}
 					}
 				} else if (action == "cm-files-ne-fo") {
-					window.location = "create.php?loc=" + loc + "&filetype=dir";
+					var filename = newLocalFile("new folder","dir");
+					for (i = 0; i < selectedFiles.length; i++) {
+						selectedFiles[0].classList.remove("selected");
+					}
+					getFileByName(filename).classList.add("selected");
+					cmAction("cm-files-rn");
+					frameAction("create.php?loc=" + loc + "&filetype=dir&name=" + filename, "Creating...");
 				} else if (action == "cm-files-ne-fi") {
-					window.location = "create.php?loc=" + loc + "&filetype=file";
+					var filename = newLocalFile("new file","file");
+					for (i = 0; i < selectedFiles.length; i++) {
+						selectedFiles[0].classList.remove("selected");
+					}
+					getFileByName(filename).classList.add("selected");
+					cmAction("cm-files-rn");
+					frameAction("create.php?loc=" + loc + "&filetype=file&name=" + filename, "Creating...");
 				} else if (action == "cm-files-ne-up") {
 					document.getElementById("file-upload").click();
 				} else if (action == "cm-files-co") {
@@ -715,12 +836,40 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				} else if (action == "cm-files-cu") {
 					top.document.getElementById("clipboard").innerHTML = selectedFileNames;
 					top.document.getElementById("clipboard").setAttribute("data-action","cut");
-				} else if (action == "cm-files-pa") {
-					if (top.document.getElementById("clipboard").innerHTML !== "") {
-						if (top.document.getElementById("clipboard").getAttribute("data-action") == "cut") {
-							window.location = "move.php?files=" + top.document.getElementById("clipboard").innerHTML + "&loc=" + loc;
+					var allFiles = document.getElementsByClassName("file");
+					for (i = 0; i < allFiles.length; i++) {
+						if (allFiles[i].classList.contains("selected")) {
+							allFiles[i].classList.add("faded");
 						} else {
-							window.location = "copy.php?loc=" + loc + "&files=" + top.document.getElementById("clipboard").innerHTML;
+							allFiles[i].classList.remove("faded");
+						}
+					}
+				} else if (action == "cm-files-pa") {
+					var clipboard = top.document.getElementById("clipboard");
+					if (clipboard.innerHTML !== "") {
+						var filesToCreate = clipboard.innerHTML.split(","),
+							continueToPaste = true;
+						for (i = 0; i < filesToCreate.length; i++) {
+							var fileSplit = filesToCreate[i].split(":"),
+								locSplit = fileSplit[1].split("/"),
+								fileName = locSplit[locSplit.length-1];
+							if (getFileByName(fileName)) {
+								continueToPaste = false;
+							}
+						}
+						if (continueToPaste) {
+							for (i = 0; i < filesToCreate.length; i++) {
+								var fileSplit = filesToCreate[i].split(":"),
+									locSplit = fileSplit[1].split("/"),
+									fileName = locSplit[locSplit.length-1];
+								newLocalFile(fileName,fileSplit[0]);
+							}
+							if (clipboard.getAttribute("data-action") == "cut") {
+								frameAction("move.php?files=" + top.document.getElementById("clipboard").innerHTML + "&loc=" + loc,"Pasting...");
+								clipboard.innerHTML = "";
+							} else {
+								frameAction("copy.php?loc=" + loc + "&files=" + top.document.getElementById("clipboard").innerHTML,"Pasting...");
+							}
 						}
 					}
 				} else if (action == "cm-files-uz") {
@@ -761,6 +910,132 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					top.closeContextMenu();
 				}
 			} );
+			function getFileByName(filename) {
+				var allFiles = document.getElementsByClassName("file");
+				for (i = 0; i < allFiles.length; i++) {
+					if (allFiles[i].getAttribute("data-name") == filename) {
+						return allFiles[i];
+					}
+				}
+				return false;
+			}
+			function newLocalFile(filename,filetype) {
+				var today = new Date();
+				var filetime = pad_with_zeroes((today.getMonth()+1),2) + "/" + pad_with_zeroes(today.getDate(),2) + "/" + pad_with_zeroes(today.getFullYear(),4) + ", " + pad_with_zeroes(today.getHours(),2) + ":" + pad_with_zeroes(today.getMinutes(),2) + ":" + pad_with_zeroes(today.getSeconds(),2);
+				if (getFileByName(filename)) {
+					var filecounter = 1;
+					while (getFileByName(filename + " (" + filecounter + ")")) {
+						filecounter++;
+					}
+					filename = filename + " (" + filecounter + ")";
+				}
+				var fileBox = document.getElementById("files"),
+					newFile = document.createElement('div'),
+					fileIcon = '<i class="fa fa-file-o" aria-hidden="true"></i>',
+					folderInfo = document.getElementById("folderInfo");
+				newFile.setAttribute("data-selected","false");
+				newFile.setAttribute("data-name",filename);
+				newFile.setAttribute("data-filetype",filetype);
+				newFile.ondragstart = function(event){ drag(event); };
+				newFile.setAttribute("data-continue","false");
+				newFile.setAttribute("draggable","true");
+				newFile.setAttribute("class","file");
+				newFile.setAttribute("title",filename + "\r\nModified: " + filetime);
+				newFile.onmousedown = function(){ selectfile(newFile,false); };
+				newFile.onclick = function(){ selectfile(newFile,true); };
+				newFile.setAttribute("data-linkto","");
+				var dotSplit = filename.split('.');
+				if (filetype == "dir") {
+					fileIcon = '<i class="fa fa-folder-o" aria-hidden="true"></i>';
+					newFile.style.order = "-1";
+					folderInfo.setAttribute("data-foc",+folderInfo.getAttribute("data-foc")+1);
+				} else if (dotSplit.length == 1) {
+					fileIcon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+					folderInfo.setAttribute("data-fic",+folderInfo.getAttribute("data-fic")+1);
+				} else {
+					var extension = dotSplit[dotSplit.length-1];
+					if (extension == "png" || extension == "jpg" || extension == "gif" || extension == "bmp" || extension == "ico") {
+						fileIcon = '<i class="fa fa-file-image-o" aria-hidden="true"></i>';
+					} else if (extension == "txt") {
+						fileIcon = '<i class="fa fa-file-text-o" aria-hidden="true"></i>';
+					} else if (extension == "php" || extension == "html" || extension == "xml" || extension == "js" || extension == "css") {
+						fileIcon = '<i class="fa fa-file-code-o" aria-hidden="true"></i>';
+					} else if (extension == "wav" || extension == "mp3") {
+						fileIcon = '<i class="fa fa-file-audio-o" aria-hidden="true"></i>';
+					} else if (extension == "xlsx" || extension == "xlsm") {
+						fileIcon = '<i class="fa fa-file-excel-o" aria-hidden="true"></i>';
+					} else if (extension == "pdf") {
+						fileIcon = '<i class="fa fa-file-pdf-o" aria-hidden="true"></i>';
+					} else if (extension == "docx" || extension == "docm") {
+						fileIcon = '<i class="fa fa-file-word-o" aria-hidden="true"></i>';
+					} else if (extension == "tar" || extension == "zip" || extension == "gz" || extension == "7z" || extension == "s7z" || extension == "jar" || extension == "rar" || extension == "tgz") {
+						fileIcon = '<i class="fa fa-file-archive-o" aria-hidden="true"></i>';
+					} else if (extension == "pptx" || extension == "pptm") {
+						fileIcon = '<i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>';
+					} else if (extension == "mov" || extension == "qt" || extension == "mp4" || extension == "m4p" || extension == "m4v") {
+						fileIcon = '<i class="fa fa-file-video-o" aria-hidden="true"></i>';
+					} else if (extension == "gxl") {
+						fileIcon = '<i class="fa fa-question" aria-hidden="true"></i>';
+					} else {
+						fileIcon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+					}
+					folderInfo.setAttribute("data-fic",+folderInfo.getAttribute("data-fic")+1);
+				}
+				folderInfo.innerHTML = "- " + folderInfo.getAttribute("data-foc") + " folders and " + folderInfo.getAttribute("data-fic") + " files";
+				newFile.innerHTML = '<div class="file__icon">' + fileIcon + '</div><div class="file__name" contenteditable="false">' + filename + '</div>';
+				fileBox.appendChild(newFile);
+				return filename;
+			}
+			function removeFilesByString(filestring) {
+				var files = filestring.split(','),
+					folderInfo = document.getElementById("folderInfo");
+				files.forEach(function(file) {
+					var filesplit = file.split(':');
+					var filepath = filesplit[1].split('/');
+					var filename = filepath[filepath.length-1];
+					getFileByName(filename).remove();
+					if (filesplit[0] == "dir") {
+						folderInfo.setAttribute("data-foc",+folderInfo.getAttribute("data-foc")-1);
+					} else {
+						folderInfo.setAttribute("data-fic",+folderInfo.getAttribute("data-fic")-1);
+					}
+				});
+				folderInfo.innerHTML = "- " + folderInfo.getAttribute("data-foc") + " folders and " + folderInfo.getAttribute("data-fic") + " files";
+			}
+			var actionQueue = [];
+			function frameAction(action, infoText) {
+				var actionFrame = document.getElementById("action-frame"),
+					statusText = document.getElementById("status");
+				actionQueue.push(action + ";" + infoText);
+				if (actionFrame.getAttribute("data-idle") == "true") {
+					actionFrame.setAttribute("data-idle","false");
+					var nextAction = actionQueue[0].split(';');
+					actionFrame.src = nextAction[0];
+					statusText.innerHTML = nextAction[1];
+					actionQueue.shift();
+					actionFrame.onload = function() {
+						statusText.innerHTML = "";
+						if (actionQueue.length > 0) {
+							var nextAction = actionQueue[0].split(':');
+							this.src = nextAction[0];
+							statusText.innerHTML = nextAction[1];
+							actionQueue.shift();
+						} else {
+							this.setAttribute("data-idle","true");
+						}
+					};
+				}
+			}
+			function pad_with_zeroes(number, length) {
+			
+			    var my_string = '' + number;
+			    while (my_string.length < length) {
+			        my_string = '0' + my_string;
+			    }
+			
+			    return my_string;
+			
+			}
 		</script>
 	</body>
 </html>

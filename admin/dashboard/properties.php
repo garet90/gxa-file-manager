@@ -147,6 +147,9 @@
 			array_push($filetypes,$extension);
 		}
 	}
+	if ($title == "") {
+		$title = "Document Root";
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -157,12 +160,12 @@
 		<style>
 			body {
 				color: #1C1C1C;
+				font-family: Sans-serif;
 			}
 			table {
 				word-break: break-all;
 				width: 100%;
 				border-collapse: collapse;
-				font-family: Sans-serif;
 				font-size: 9pt;
 			}
 			td, th {
@@ -244,5 +247,40 @@
 				?></td>
 			</tr>
 		</table>
+		<script type="text/javascript">
+			function getAbsolutePosition(e) {
+			  var posx = 0;
+			  var posy = 0;
+			
+			  if (!e) var e = window.event;
+			
+			  if (e.pageX || e.pageY) {
+			    posx = e.pageX - document.body.scrollLeft - 
+			                       document.documentElement.scrollLeft;
+			    posy = e.pageY - document.body.scrollTop - 
+			                       document.documentElement.scrollTop;
+			  } else if (e.clientX || e.clientY) {
+			    posx = e.clientX;
+			    posy = e.clientY;
+			  }
+			
+			  return {
+			    x: posx,
+			    y: posy
+			  }
+			}
+			document.addEventListener( "contextmenu", function(e) {
+				e.preventDefault();
+				top.openContextMenu(getAbsolutePosition(e), window.frameElement);
+			} );
+			document.addEventListener( "keydown", function(e) {
+				if (e.keyCode == 27 || e.which == 27) {
+					top.closeContextMenu();
+				}
+			} );
+			document.addEventListener( "click", function(e) {
+				top.closeContextMenu();
+			} );
+		</script>
 	</body>
 </html>

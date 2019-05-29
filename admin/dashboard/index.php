@@ -9,9 +9,12 @@
 				margin: 0;
 				padding: 0;
 				overflow: hidden;
-				user-select: none;
 				height: 100vh;
 				width: 100vw;
+				user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				-webkit-user-select: none;
 			}
 			.window {
 				background-color: #A9BCF5;
@@ -22,6 +25,7 @@
 				min-height: 250px;
 				min-width: 400px;
 				box-shadow: 4px 4px 2px -2px rgba(0,0,0,.5);
+				box-sizing: border-box;
 			}
 			.windowheader, .windowcontent {
 				border: 1px solid white;
@@ -106,7 +110,7 @@
 			.windowtitle {
 				float: left;
 			}
-			.windowclose {
+			.windowclose, .windowfs {
 				float: right;
 				width: 20px;
 				text-align: center;
@@ -139,14 +143,14 @@
 			.context-menu__items {
 				list-style: none;
 				padding: 0;
-				margin-block-start: 3px;
-				margin-block-end: 3px;
+				margin: 3px 0;
 			}
 			.context-menu__item {
 				padding: 4px 20px;
 				font-size: 9pt;
 				text-decoration: none;
 				font-family: Sans-serif;
+				cursor: default;
 			}
 			.context-menu__item:hover {
 				background-color: #eeeeee;
@@ -186,12 +190,55 @@
 		<div id="bgtext">GXa File Manager</div>
 		<div id="background-darken"></div>
 		<script type="text/javascript">
-			function resolveDarkened(elmnt,frameToReload) {
+			function FSToggle(elmnt,direction) {
+				wIcon = elmnt.getElementsByClassName("windowfs")[0];
+				if (elmnt.getAttribute("data-fullscreen") == "false") {
+					elmnt.setAttribute("data-fullscreen",elmnt.style.top + ":" + elmnt.style.left + ":" + elmnt.style.height + ":" + elmnt.style.width + ":");
+					if (direction) {
+						if (direction == "left") {
+							elmnt.style.top = "0";
+							elmnt.style.right = "";
+							elmnt.style.left = "0";
+							elmnt.style.height = "100vh";
+							elmnt.style.width = "50vw";
+						} else if (direction == "right") {
+							elmnt.style.top = "0";
+							elmnt.style.right = "0";
+							elmnt.style.left = "";
+							elmnt.style.height = "100vh";
+							elmnt.style.width = "50vw";
+						}
+					} else {
+						elmnt.style.top = "0";
+						elmnt.style.right = "";
+						elmnt.style.left = "0";
+						elmnt.style.height = "100vh";
+						elmnt.style.width = "100vw";
+					}
+					wIcon.innerHTML = '<i class="fa fa-window-restore"></i>';
+					elmnt.getElementsByClassName("resizer")[0].style.display = "none";
+					elmnt.getElementsByClassName("nresizer")[0].style.display = "none";
+					elmnt.getElementsByClassName("eresizer")[0].style.display = "none";
+				} else {
+					var datasplit = elmnt.getAttribute("data-fullscreen").split(":");
+					elmnt.style.top = datasplit[0];
+					elmnt.style.left = datasplit[1];
+					elmnt.style.right = "";
+					elmnt.style.height = datasplit[2];
+					elmnt.style.width = datasplit[3];
+					elmnt.setAttribute("data-fullscreen","false");
+					wIcon.innerHTML = '<i class="fa fa-window-maximize"></i>';
+					elmnt.getElementsByClassName("resizer")[0].style.display = "block";
+					elmnt.getElementsByClassName("nresizer")[0].style.display = "block";
+					elmnt.getElementsByClassName("eresizer")[0].style.display = "block";
+				}
+			}
+			function resolveDarkened(elmnt,frameToReload,filesToRemove) {
 				var backgroundDarken = document.getElementById("background-darken");
 				backgroundDarken.style.display = "none";
 				elmnt.remove();
 				if (frameToReload) {
-					document.getElementById(frameToReload).contentWindow.location.reload();
+					document.getElementById(frameToReload).contentWindow.removeFilesByString(filesToRemove);
 				}
 			}
 			var windowCount = 0;
@@ -204,6 +251,7 @@
 				newWindow.onmousedown = function() { moveToTop(this); }
 				topZIndex++;
 				newWindow.style.zIndex = topZIndex;
+				newWindow.setAttribute("data-fullscreen","false");
 				if (imptWindow) {
 					backgroundDarken.style.display = "block";
 					backgroundDarken.style.zIndex = topZIndex;
@@ -253,7 +301,7 @@
 				if (imptWindow) {
 					newWindow.innerHTML = '<div class="windowheader" id="dw-' + windowCount + '-hd"><div class="windowtitle" id="dw-' + windowCount + '-ti"><div class="windowicon"><i class="fa fa-spinner fa-fw"></i></div>Loading</div><div class="windowclose" onclick="resolveDarkened(this.parentElement.parentElement);"><i class="fa fa-times"></i></div></div><div class="windowcontent"><div class="interactionshield" id="dw-' + windowCount + '-is"></div><iframe src="' + target + '" class="windowframe" id="dw-' + windowCount + '-cw"></iframe><div class="loadicon" id="dw-' + windowCount + '-li"><i class="fa fa-spinner fa-pulse fa-fw"></i></div></div>';
 				} else {
-					newWindow.innerHTML = '<div class="windowheader" id="dw-' + windowCount + '-hd"><div class="windowtitle" id="dw-' + windowCount + '-ti"><div class="windowicon"><i class="fa fa-spinner fa-fw"></i></div>Loading</div><div class="windowclose" onclick="this.parentElement.parentElement.remove();"><i class="fa fa-times"></i></div></div><div class="windowcontent"><div class="interactionshield" id="dw-' + windowCount + '-is"></div><iframe src="' + target + '" class="windowframe" id="dw-' + windowCount + '-cw"></iframe><div class="loadicon" id="dw-' + windowCount + '-li"><i class="fa fa-spinner fa-pulse fa-fw"></i></div></div>';
+					newWindow.innerHTML = '<div class="windowheader" id="dw-' + windowCount + '-hd"><div class="windowtitle" id="dw-' + windowCount + '-ti"><div class="windowicon"><i class="fa fa-spinner fa-fw"></i></div>Loading</div><div class="windowclose" onclick="this.parentElement.parentElement.remove();"><i class="fa fa-times"></i></div><div class="windowfs" onclick="FSToggle(this.parentElement.parentElement);"><i class="fa fa-window-maximize"></i></div></div><div class="windowcontent"><div class="interactionshield" id="dw-' + windowCount + '-is"></div><iframe src="' + target + '" class="windowframe" id="dw-' + windowCount + '-cw"></iframe><div class="loadicon" id="dw-' + windowCount + '-li"><i class="fa fa-spinner fa-pulse fa-fw"></i></div></div>';
 				}
 				document.body.appendChild(newWindow);
 				initiateWindow(document.getElementById('dw-' + windowCount));
@@ -315,10 +363,22 @@
 					// set the element's new position:
 					elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
 					elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+					if (elmnt.getAttribute("data-fullscreen") !== "false") {
+						var elmntFSSplit = elmnt.getAttribute("data-fullscreen").split(":");
+						elmnt.setAttribute("data-fullscreen",(pos4-17) + "px:" + (pos3-(.5*+elmntFSSplit[3].slice(0,-2))) + "px:" + elmntFSSplit[2] + ":" + elmntFSSplit[3]);
+						FSToggle(elmnt);
+					}
 				}
 			
 				function closeDragElement() {
 					// stop moving when mouse button is released:
+					if (pos4 <= 0) {
+						FSToggle(elmnt);
+					} else if (pos3 <= 0) {
+						FSToggle(elmnt,"left");
+					} else if (pos3 >= (+window.innerWidth-1)) {
+						FSToggle(elmnt,"right");
+					}
 					changeISStatus(false);
 					document.onmouseup = null;
 					document.onmousemove = null;

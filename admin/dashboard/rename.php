@@ -23,7 +23,7 @@
 			$newfile = '../../' . $_GET['loc'] . '/' . $_GET['newname'];
 			$fromfile = '../../' . $filesp[1];
 			rename($fromfile, $newfile);
-			header('Location: explorer.php?loc=' . $_GET['loc']);
+			header('Location: about:blank');
 		}
 	}
 ?>
