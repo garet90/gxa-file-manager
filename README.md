@@ -12,4 +12,4 @@ GXa is an advanced desktop-like administration tool that allows you to edit the 
 # Included Plugins
 - Font Awesome
 
-*All of these are open source and free to use.
+*All of these are free to use.
