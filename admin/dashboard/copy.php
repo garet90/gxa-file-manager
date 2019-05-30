@@ -27,22 +27,18 @@
 			$endpath = $_GET['loc'];
 			if ($splitpath[0] == "file") {
 				if (file_exists('../../' . $endpath . '/' . $filename)) {
-					$errors = $errors . 'file "' . $endpath . '/' . $filename . '" already exists<br />';
+					$errors = $errors . 'file "' . $endpath . '/' . $filename . '" already exists! ';
 				} else {
 					copy ('../../' . $splitpath[1], '../../' . $endpath . '/' . $filename);
 				}
 			} else {
 				if (file_exists('../../' . $endpath . '/' . $filename . '/')) {
-					$errors = $errors . 'directory "' . $endpath . '/' . $filename . '/" already exists<br />';
+					$errors = $errors . 'directory "' . $endpath . '/' . $filename . '/" already exists! ';
 				} else {
 					copy_directory('../../' . $splitpath[1], '../../' . $endpath . '/' . $filename);
 				}
 			}
 		}
-		if ($errors == '') {
-			header('location: explorer.php?loc=' . $_GET['loc']);
-		} else {
-			header('location: explorer.php?loc=' . $_GET['loc'] . '&errors=' . $errors);
-		}
+		echo $errors;
 	}
 ?>

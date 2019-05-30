@@ -254,7 +254,13 @@
 					document.getElementById("edit-form").submit();
 					document.getElementById("infoText").innerHTML = "Saving...";
 					document.getElementById("action-frame").onload = function() {
-						document.getElementById("infoText").innerHTML = "Saved";
+						var frameContent = (this.contentWindow.document || this.contentDocument);
+						if (frameContent.body.innerHTML !== '') {
+							console.error(frameContent.body.innerHTML);
+							document.getElementById("infoText").innerHTML = "An error occurred.";
+						} else {
+							document.getElementById("infoText").innerHTML = "Saved";
+						}
 						window.setTimeout(function(){
 							document.getElementById("infoText").innerHTML = "";
 						},1000);

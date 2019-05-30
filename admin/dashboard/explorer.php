@@ -127,7 +127,7 @@
 				box-sizing: border-box;
 				display: none;
 			}
-			#action-frame {
+			#action-frame, #download-frame {
 				display: none;
 			}
 			#status {
@@ -138,6 +138,7 @@
 	</head>
 	<body>
 		<iframe src="about:blank" id="action-frame" data-idle="true"></iframe>
+		<iframe src="about:blank" id="download-frame"></iframe>
 		<form method="post" action="upload.php" enctype="multipart/form-data">
 			<input type="hidden" name="loc" value="<?php echo $_GET['loc']; ?>"></input>
 			<input type="file" name="file" style="display: none;" id="file-upload" onchange="this.parentElement.submit();"></input>
@@ -316,45 +317,43 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 							if (elmnt.getAttribute("data-continue") == "false") {
 								elmnt.setAttribute("data-continue","true");
 							} else {
-								if (elmnt.getAttribute("data-naming") == "false") {
-									var filetype = elmnt.getAttribute("data-filetype"),
-										filename = elmnt.getAttribute("data-name");
-									if (filetype == "dir") {
-										if (filename == ".") {
-											window.location = "?loc=" + loc;
-										} else if (filename == "..") {
-											if (loc == "/") {
-												window.location = "?loc=/";
-											} else {
-												var parentdirectory = loc.split('/').slice(0, -2).join('/');
-												if (parentdirectory == "") {
-													if (window.frameElement.id !== "desktop-explorer") {
-														window.location = "?loc=/";
-													} else {
-														top.createWindow('explorer.php?loc=/');
-													}
-												} else {
-													if (window.frameElement.id !== "desktop-explorer") {
-														window.location = "?loc=" + parentdirectory + "/";
-													} else {
-														top.createWindow('explorer.php?loc=' + parentdirectory + '/');
-													}
-												}
-											}
+								var filetype = elmnt.getAttribute("data-filetype"),
+									filename = elmnt.getAttribute("data-name");
+								if (filetype == "dir") {
+									if (filename == ".") {
+										window.location = "?loc=" + loc;
+									} else if (filename == "..") {
+										if (loc == "/") {
+											window.location = "?loc=/";
 										} else {
-											if (window.frameElement.id !== "desktop-explorer") {
-												window.location = "?loc=" + loc + filename + "/";
+											var parentdirectory = loc.split('/').slice(0, -2).join('/');
+											if (parentdirectory == "") {
+												if (window.frameElement.id !== "desktop-explorer") {
+													window.location = "?loc=/";
+												} else {
+													top.createWindow('explorer.php?loc=/');
+												}
 											} else {
-												top.createWindow('explorer.php?loc=' + loc + filename + '/');
+												if (window.frameElement.id !== "desktop-explorer") {
+													window.location = "?loc=" + parentdirectory + "/";
+												} else {
+													top.createWindow('explorer.php?loc=' + parentdirectory + '/');
+												}
 											}
 										}
 									} else {
-										if (filetype == ".gxl") {
-											top.createWindow(elmnt.getAttribute("data-linkto"));
+										if (window.frameElement.id !== "desktop-explorer") {
+											window.location = "?loc=" + loc + filename + "/";
+										} else {
+											top.createWindow('explorer.php?loc=' + loc + filename + '/');
 										}
 									}
-									elmnt.setAttribute("data-continue","false");
+								} else {
+									if (filetype == ".gxl") {
+										top.createWindow(elmnt.getAttribute("data-linkto"));
+									}
 								}
+								elmnt.setAttribute("data-continue","false");
 							}
 						}
 					} else {
@@ -443,27 +442,37 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 			document.onkeydown = function(e) {
 				var key = e.keyCode || e.which;
 				keys[key] = true;
-				if (keys[17] && keys[65]) {
-					var files = document.getElementsByClassName("file");
-					for (i = 0; i < files.length; i++) {
-						files[i].classList.add("selected");
+				var selectedFiles = document.getElementsByClassName("selected");
+				if (keys[17] && keys[82]) {
+					e.preventDefault();
+					location.reload();
+				}
+				if (selectedFiles.length == 1 && selectedFiles[0].getAttribute("data-naming") == "true") { } else {
+					if (keys[17] && keys[65]) {
+						e.preventDefault();
+						var files = document.getElementsByClassName("file");
+						for (i = 0; i < files.length; i++) {
+							files[i].classList.add("selected");
+						}
 					}
-				}
-				if (keys[17] && keys[67]) {
-					cmAction("cm-files-co");
-				}
-				if (keys[17] && keys[88]) {
-					cmAction("cm-files-cu");
-				}
-				if (keys[17] && keys[86]) {
-					cmAction("cm-files-pa");
-				}
-				if (keys[46]) {
-					cmAction("cm-files-de");
-				}
-				if (keys[13]) {
-					var selectedFiles = document.getElementsByClassName("selected");
-					if (selectedFiles.length == 1) {
+					if (keys[17] && keys[67]) {
+						e.preventDefault();
+						cmAction("cm-files-co");
+					}
+					if (keys[17] && keys[88]) {
+						e.preventDefault();
+						cmAction("cm-files-cu");
+					}
+					if (keys[17] && keys[86]) {
+						e.preventDefault();
+						cmAction("cm-files-pa");
+					}
+					if (keys[46]) {
+						e.preventDefault();
+						cmAction("cm-files-de");
+					}
+					if (keys[13] && selectedFiles.length == 1) {
+						e.preventDefault();
 						selectedFiles[0].click();
 						selectedFiles[0].click();
 					}
@@ -482,14 +491,20 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				top.closeContextMenu();
 				if (clickInsideElement( e, "file" ) == false) {
 					var selector = document.getElementById("selector"),
-						position = getPosition(e);
-					selector.style.display = "block";
-					selector.style.top = position.y + "px";
-					selector.style.left = position.x + "px";
-					selector.style.height = 0;
-					selector.style.width = 0;
-					dragselecting = true;
-					dragselectstart = position;
+						position = getPosition(e),
+						body = document.body,
+						html = document.documentElement,
+						pageHeight = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight ),
+						pageWidth = Math.max( body.scrollWidth, body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
+					if (position.x <= pageWidth) {
+						selector.style.display = "block";
+						selector.style.top = position.y + "px";
+						selector.style.left = position.x + "px";
+						selector.style.height = 0;
+						selector.style.width = 0;
+						dragselecting = true;
+						dragselectstart = position;
+					}
 				}
 			});
 			document.addEventListener( "mousemove", function(e) {
@@ -726,10 +741,11 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 						}
 					}
 				} else if (action == "cm-files-do") {
+					var downloadFrame = document.getElementById("download-frame");
 					if (selectedFiles.length > 0) {
-						window.location = "download.php?loc=" + loc + "&files=" + selectedFileNames;
+						downloadFrame.src = "download.php?loc=" + loc + "&files=" + selectedFileNames;
 					} else {
-						window.location = "download.php?loc=" + loc;
+						downloadFrame.src = "download.php?loc=" + loc;
 					}
 				} else if (action == "cm-files-de") {
 					if (selectedFiles.length > 0) {
@@ -849,21 +865,21 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					if (clipboard.innerHTML !== "") {
 						var filesToCreate = clipboard.innerHTML.split(","),
 							continueToPaste = true;
-						for (i = 0; i < filesToCreate.length; i++) {
-							var fileSplit = filesToCreate[i].split(":"),
+						filesToCreate.forEach(function(file){
+							var fileSplit = file.split(":"),
 								locSplit = fileSplit[1].split("/"),
 								fileName = locSplit[locSplit.length-1];
 							if (getFileByName(fileName)) {
 								continueToPaste = false;
 							}
-						}
+						});
 						if (continueToPaste) {
-							for (i = 0; i < filesToCreate.length; i++) {
-								var fileSplit = filesToCreate[i].split(":"),
+							filesToCreate.forEach(function(file){
+								var fileSplit = file.split(":"),
 									locSplit = fileSplit[1].split("/"),
 									fileName = locSplit[locSplit.length-1];
 								newLocalFile(fileName,fileSplit[0]);
-							}
+							});
 							if (clipboard.getAttribute("data-action") == "cut") {
 								frameAction("move.php?files=" + top.document.getElementById("clipboard").innerHTML + "&loc=" + loc,"Pasting...");
 								clipboard.innerHTML = "";
@@ -1015,6 +1031,12 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					actionQueue.shift();
 					actionFrame.onload = function() {
 						statusText.innerHTML = "";
+						var frameContent = (this.contentWindow.document || this.contentDocument);
+						if (frameContent.body.innerHTML !== '') {
+							console.error(frameContent.body.innerHTML);
+							statusText.innerHTML = "An error occurred.";
+							location.reload();
+						}
 						if (actionQueue.length > 0) {
 							var nextAction = actionQueue[0].split(':');
 							this.src = nextAction[0];
@@ -1036,6 +1058,13 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 			    return my_string;
 			
 			}
+			<?php
+				if (isset($_GET['errors'])) {
+					if ($_GET['errors'] !== '') {
+						echo 'console.error("' . $_GET['errors'] . '");';
+					}
+				}
+			?>
 		</script>
 	</body>
 </html>

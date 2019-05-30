@@ -27,7 +27,7 @@
 				if (file_exists('../../' . $splitpath[1])) {
 					rrmdir('../../' . $splitpath[1]);
 				} else {
-					$errors = $errors . 'directory ' . $splitpath[1] . ' does not exist.<br />';
+					$errors = $errors . 'directory ' . $splitpath[1] . ' does not exist. ';
 					$okrun = false;
 				}
 			}
@@ -35,7 +35,7 @@
 				if (file_exists('../../' . $splitpath[1])) {
 					unlink('../../' . $splitpath[1]);
 				} else {
-					$errors = $errors . 'file ' . $splitpath[1] . ' does not exist.<br />';
+					$errors = $errors . 'file ' . $splitpath[1] . ' does not exist. ';
 					$okrun = false;
 				}
 			}
@@ -43,7 +43,7 @@
 		if ($okrun == true) {
 			echo "<script type='text/javascript'>top.resolveDarkened(window.frameElement.parentElement.parentElement,'" . $_GET['frameToReload'] . "','" . $_GET['files'] . "');</script>";
 		} else {
-			header('location: explorer.php?loc=' . $_GET['loc'] . '&errors=' . $errors);
+			echo "<script type='text/javascript'>console.error('" . $errors . "'); top.resolveDarkened(window.frameElement.parentElement.parentElement);</script>";
 		}
 	}
 ?>

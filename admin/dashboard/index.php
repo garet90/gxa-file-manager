@@ -155,6 +155,12 @@
 			.context-menu__item:hover {
 				background-color: #eeeeee;
 			}
+			.context-menu__shortcut {
+				color: #BDBDBD;
+				float: right;
+				font-size: 7pt;
+				line-height: 11pt;
+			}
 			.context-menu__break {
 				border-bottom: 1px solid #eeeeee;
 				margin: 3px 0;
@@ -549,8 +555,8 @@
 						positionTop = position.y;
 						positionLeft = position.x;
 					} else {
-						positionTop = position.y + +frame.parentElement.parentElement.style.top.slice(0, -2) + 4 + +frame.parentElement.parentElement.getElementsByClassName("windowheader")[0].offsetHeight;
-						positionLeft = position.x + +frame.parentElement.parentElement.style.left.slice(0, -2) + 2;
+						positionTop = position.y + +frame.parentElement.parentElement.offsetTop + 4 + +frame.parentElement.parentElement.getElementsByClassName("windowheader")[0].offsetHeight;
+						positionLeft = position.x + +frame.parentElement.parentElement.offsetLeft + 2;
 					}
 				} else {
 					positionTop = position.y;
@@ -633,7 +639,7 @@
 				<div id="cm-files" class="context-menu__filter">
 					<li class="context-menu__item" id="cm-files-op">
 						<span class="context-menu__link">
-							Open
+							Open<span class="context-menu__shortcut">Enter</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-files-on">
@@ -643,7 +649,7 @@
 					</li>
 					<li class="context-menu__item" id="cm-files-re">
 						<span class="context-menu__link">
-							Refresh
+							Refresh<span class="context-menu__shortcut">CTRL + R</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-files-pd">
@@ -659,7 +665,7 @@
 					</li>
 					<li class="context-menu__item" id="cm-files-de">
 						<span class="context-menu__link">
-							Delete
+							Delete<span class="context-menu__shortcut">DEL</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-files-ed">
@@ -679,17 +685,17 @@
 					</li>
 					<li class="context-menu__item" id="cm-files-cu">
 						<span class="context-menu__link">
-							Cut
+							Cut<span class="context-menu__shortcut">CTRL + X</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-files-co">
 						<span class="context-menu__link">
-							Copy
+							Copy<span class="context-menu__shortcut">CTRL + C</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-files-pa">
 						<span class="context-menu__link">
-							Paste
+							Paste<span class="context-menu__shortcut">CTRL + V</span>
 						</span>
 					</li>
 					<div class="context-menu__filter" id="cm-files-filter-uz">
@@ -711,39 +717,39 @@
 				<div id="cm-edit" class="context-menu__filter">
 					<li class="context-menu__item" id="cm-edit-sa">
 						<span class="context-menu__link">
-							Save
+							Save<span class="context-menu__shortcut">CTRL + S</span>
 						</span>
 					</li>
 					<div class="context-menu__break"></div>
 					<li class="context-menu__item" id="cm-edit-un">
 						<span class="context-menu__link">
-							Undo
+							Undo<span class="context-menu__shortcut">CTRL + Z</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-edit-re">
 						<span class="context-menu__link">
-							Redo
+							Redo<span class="context-menu__shortcut">CTRL + Y</span>
 						</span>
 					</li>
 					<div class="context-menu__break"></div>
 					<li class="context-menu__item" id="cm-edit-cu">
 						<span class="context-menu__link">
-							Cut
+							Cut<span class="context-menu__shortcut">CTRL + X</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-edit-co">
 						<span class="context-menu__link">
-							Copy
+							Copy<span class="context-menu__shortcut">CTRL + C</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-edit-pa">
 						<span class="context-menu__link">
-							Paste
+							Paste<span class="context-menu__shortcut">CTRL + V</span>
 						</span>
 					</li>
 					<li class="context-menu__item" id="cm-edit-se">
 						<span class="context-menu__link">
-							Select All
+							Select All<span class="context-menu__shortcut">CTRL + A</span>
 						</span>
 					</li>
 					<div class="context-menu__break"></div>

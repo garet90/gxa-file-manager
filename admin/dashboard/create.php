@@ -7,15 +7,15 @@
 		if ($_GET['filetype'] == "file") {
 			if(file_exists('../../' . $_GET['loc'] . '/' . $_GET['name'])){
 				$okrun = false;
-				$errors = $errors . "File already exists.<br />";
+				$errors = $errors . "File already exists. ";
 			}
 		} else if ($_GET['filetype'] == "dir") {
 			if(file_exists('../../' . $_GET['loc'] . '/' . $_GET['name'])){
 				$okrun = false;
-				$errors = $errors . "Directory already exists.<br />";
+				$errors = $errors . "Directory already exists. ";
 			}
 		} else {
-			$errors = $errors . "You must choose a file type!<br />";
+			$errors = $errors . "You must choose a file type! ";
 			$okrun = false;
 		}
 		if ($okrun == true) {
@@ -26,6 +26,6 @@
 				mkdir('../../' . $_GET['loc'] . '/' . $_GET['name']);
 			}
 		}
-		header('location: about:blank');
+		echo $errors;
 	}
 ?>
