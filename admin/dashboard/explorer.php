@@ -66,6 +66,9 @@
 				flex-wrap: wrap;
 				justify-content: center;
 				margin: 0 0 27px 0;
+				font-family: Sans-serif;
+				font-size: 9pt;
+				line-height: calc(100vh - 28px);
 			}
 			.file {
 				width: 75px;
@@ -127,7 +130,7 @@
 				box-sizing: border-box;
 				display: none;
 			}
-			#action-frame, #download-frame {
+			#action-frame, #download-frame, #folder-editable {
 				display: none;
 			}
 			#status {
@@ -146,10 +149,22 @@
 		<div id="files">
 			<?php
 				$path = '../../' . $_GET['loc'];
-				if (file_exists($path)) {
+				$continue = true;
+				$folderEditable = true;
+				$filecount = 0;
+				$foldercount = 0;
+				if ($hasPermission == false) {
+					echo "You do not have permission to view this folder.";
+					$continue = false;
+					$folderEditable = false;
+				}
+				if (!file_exists($path)) {
+					echo "Folder doesn't exist.";
+					$continue = false;
+					$folderEditable = false;
+				}
+				if ($continue) {
 					$files = scandir($path);
-					$filecount = 0;
-					$foldercount = 0;
 					$totalsize = 0;
 					unset($files[0]);
 					if ($_GET['loc'] == '/') {
@@ -175,6 +190,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 							$filetype = '.' . $extension;
 							if (count($expfilename) == 1) {
 								$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+								$filetype = "file";
 							} else if ($extension == "png" || $extension == "jpg" || $extension == "gif" || $extension == "bmp" || $extension == "ico") {
 								$fileicon = '<i class="fa fa-file-image-o" aria-hidden="true"></i>';
 							} else if ($extension == "txt") {
@@ -215,19 +231,18 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 						}
 						echo '<div data-naming="false" data-selected="false" data-name="' . $file . '" data-filetype="' . $filetype . '" ondragstart="drag(event)" data-continue="false" draggable="true" class="file" title="' . $filetitle . '" style="order: ' . $fileorder . '" onmousedown="selectfile(this,false)" onclick="selectfile(this,true)" data-linkto="' . $linkTo . '"><div class="file__icon">' . $fileicon . '</div><div class="file__name" contenteditable="false">' . $finalname . '</div></div>';
 					}
-				} else {
-					echo 'Folder doesn\'t exist!';
 				}
 			?>
 		</div>
+		<div id="folder-editable"><?php
+			if ($folderEditable) {
+				echo "true";
+			} else {
+				echo "false";
+			}
+		?></div>
 		<div id="selector"></div>
 		<footer>
-			<?php
-				if (!isset($foldercount) && !isset($filecount)) {
-					$foldercount = "#";
-					$filecount = "#";
-				}
-			?>
 			<span id="loc"><?php echo $_GET['loc']; ?></span><span style="padding-left: 4px;" id="folderInfo" data-foc="<?php echo $foldercount; ?>" data-fic="<?php echo $filecount; ?>">- <?php echo $foldercount; ?> folders and <?php echo $filecount; ?> files</span>
 			<div id="status"></div>
 		</footer>
@@ -615,8 +630,12 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 			  }
 			}
 			document.addEventListener( "contextmenu", function(e) {
+				var folderEditable = document.getElementById("folder-editable").innerHTML;
 				e.preventDefault();
 				var selectedFiles = document.getElementsByClassName("selected");
+				top.document.getElementById("cm-files-ne").style.display = "block";
+				top.document.getElementById("cm-files-pa").style.display = "block";
+				top.document.getElementById("cm-files-re").style.display = "block";
 				if (selectedFiles.length == 0) {
 					top.document.getElementById("cm-files-cu").style.display = "none";
 					top.document.getElementById("cm-files-de").style.display = "none";
@@ -683,8 +702,11 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					top.document.getElementById("cm-files-on").style.display = "none";
 					top.document.getElementById("cm-files-pd").style.display = "none";
 				}
-				top.document.getElementById("cm-files-re").style.display = "block";
-				top.openContextMenu(getAbsolutePosition(e), window.frameElement, false, true);
+				if (folderEditable == "true") {
+					top.openContextMenu(getAbsolutePosition(e), window.frameElement, false, true);
+				} else {
+					top.openContextMenu(getAbsolutePosition(e), window.frameElement, false, false);
+				}
 				top.setElementFunctionInFrame("cm-files-re", window.frameElement);
 				top.setElementFunctionInFrame("cm-files-pd", window.frameElement);
 				top.setElementFunctionInFrame("cm-files-ed", window.frameElement);
@@ -750,7 +772,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				} else if (action == "cm-files-de") {
 					if (selectedFiles.length > 0) {
 						var filesData = selectedFileNames.split(',');
-						top.createWindow("confirm.php?title=Delete " + selectedFiles.length + " items%3F&action=delete.php?loc=" + loc + "%26files=" + selectedFileNames + "%26frameToReload=" + window.frameElement.id,325,190,'center','center',true);
+						top.createWindow("confirm.php?title=Delete " + selectedFiles.length + " items%3F&action=delete.php?loc=" + loc + "%26files=" + selectedFileNames + "%26frameToReload=" + window.frameElement.id,325,200,'center','center',true);
 					}
 				} else if (action == "cm-files-rn") {
 					if (selectedFiles.length == 1) {
@@ -792,6 +814,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 											var dotSplit = selectedName.innerHTML.split('.');
 											if (dotSplit.length == 1) {
 												selectedIcon.innerHTML = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+												selectedName.parentElement.setAttribute("data-filetype", "file");
 											} else {
 												var extension = dotSplit[dotSplit.length-1];
 												if (extension == "png" || extension == "jpg" || extension == "gif" || extension == "bmp" || extension == "ico") {
@@ -819,6 +842,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 												} else {
 													selectedIcon.innerHTML = '<i class="fa fa-file-o" aria-hidden="true"></i>';
 												}
+												selectedName.parentElement.setAttribute("data-filetype", "." + extension);
 											}
 										}
 									}
@@ -951,7 +975,6 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					folderInfo = document.getElementById("folderInfo");
 				newFile.setAttribute("data-selected","false");
 				newFile.setAttribute("data-name",filename);
-				newFile.setAttribute("data-filetype",filetype);
 				newFile.ondragstart = function(event){ drag(event); };
 				newFile.setAttribute("data-continue","false");
 				newFile.setAttribute("draggable","true");
@@ -965,9 +988,11 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					fileIcon = '<i class="fa fa-folder-o" aria-hidden="true"></i>';
 					newFile.style.order = "-1";
 					folderInfo.setAttribute("data-foc",+folderInfo.getAttribute("data-foc")+1);
+					newFile.setAttribute("data-filetype","dir");
 				} else if (dotSplit.length == 1) {
 					fileIcon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
 					folderInfo.setAttribute("data-fic",+folderInfo.getAttribute("data-fic")+1);
+					newFile.setAttribute("data-filetype","file");
 				} else {
 					var extension = dotSplit[dotSplit.length-1];
 					if (extension == "png" || extension == "jpg" || extension == "gif" || extension == "bmp" || extension == "ico") {
@@ -996,6 +1021,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 						fileIcon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
 					}
 					folderInfo.setAttribute("data-fic",+folderInfo.getAttribute("data-fic")+1);
+					newFile.setAttribute("data-filetype","." + extension);
 				}
 				folderInfo.innerHTML = "- " + folderInfo.getAttribute("data-foc") + " folders and " + folderInfo.getAttribute("data-fic") + " files";
 				newFile.innerHTML = '<div class="file__icon">' + fileIcon + '</div><div class="file__name" contenteditable="false">' + filename + '</div>';

@@ -1,26 +1,39 @@
 <?php
 	require '../config.php';
+	function copy_directory($src,$dst) {
+		$dir = opendir($src);
+		@mkdir($dst);
+		while(false !== ( $file = readdir($dir)) ) {
+			if (( $file != '.' ) && ( $file != '..' )) {
+				if ( is_dir($src . '/' . $file) ) {
+					copy_directory($src . '/' . $file,$dst . '/' . $file);
+				}
+				else {
+					copy($src . '/' . $file,$dst . '/' . $file);
+				}
+			}
+		}
+		closedir($dir);
+	}
 	if (isset($_POST['user']) && isset($_POST['password'])) {
 		if ($usemysql) {
 			$sqlilink = mysqli_connect($mysqlip, $mysqluser, $mysqlpassword, $mysqldatabase);
 			$tablecheck = mysqli_query($sqlilink,"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'settings'");
 			if (mysqli_num_rows($tablecheck) == 0) {
 				mysqli_query($sqlilink,"CREATE TABLE `gxa-panel`.`settings` ( `ID` INT NOT NULL AUTO_INCREMENT , `name` TEXT NOT NULL , `value` TEXT NOT NULL , PRIMARY KEY (`ID`)) ENGINE = InnoDB; ");
-				mysqli_query($sqlilink,"INSERT INTO `settings` (`ID`, `name`, `value`) VALUES (NULL, 'username', '" . $_POST["user"] . "'); ");
-				mysqli_query($sqlilink,"INSERT INTO `settings` (`ID`, `name`, `value`) VALUES (NULL, 'password', '" . password_hash($_POST["password"], PASSWORD_DEFAULT) . "'); ");
+				mysqli_query($sqlilink,"CREATE TABLE `gxa-panel`.`users` ( `ID` INT NOT NULL AUTO_INCREMENT , `name` TEXT NOT NULL , `password` TEXT NOT NULL , `permissions` TEXT NOT NULL , PRIMARY KEY (`ID`)) ENGINE = InnoDB; ");
+				mysqli_query($sqlilink,"INSERT INTO `users` (`ID`, `name`, `password`, `permissions`) VALUES (NULL, '" . $_POST["user"] . "', '" . password_hash($_POST["password"], PASSWORD_DEFAULT) . "', '*'); ");
+				copy_directory("../../admin/users/default/","../../admin/users/" . $_POST['user'] ."/");
 			}
-			$usernamecheck = mysqli_query($sqlilink,"SELECT value FROM `settings` WHERE name='username';");
-			while($row = mysqli_fetch_array($usernamecheck, MYSQL_ASSOC)) {
-				if ($row['value'] !== $_POST['user']) {
-					$errors = 'Your username or password is incorrect';
-					header('Location: login.php?errors=' . $errors);
-					mysqli_close($sqlilink);
-					die();
-				}
-			}
-			$passwordcheck = mysqli_query($sqlilink,"SELECT value FROM `settings` WHERE name='password';");
-			while($row = mysqli_fetch_array($passwordcheck, MYSQL_ASSOC)) {
-				if (password_verify($_POST['password'],$row['value'])) { } else {
+			$user = mysqli_query($sqlilink,"SELECT * FROM `users` WHERE name='" . $_POST['user'] . "';");
+			if (mysqli_num_rows($user) != 1) {
+				$errors = 'Your username or password is incorrect';
+				header('Location: login.php?errors=' . $errors);
+				mysqli_close($sqlilink);
+				die();
+			} 
+			while($row = mysqli_fetch_array($user, MYSQL_ASSOC)) {
+				if (password_verify($_POST['password'],$row['password'])) { } else {
 					$errors = 'Your username or password is incorrect';
 					header('Location: login.php?errors=' . $errors);
 					mysqli_close($sqlilink);
@@ -42,6 +55,9 @@
 		} else {
 			if ($_POST["user"] == $adminname && $_POST["password"] == $adminpassword) {
 				echo "Login successful. Redirecting...";
+				if (!file_exists('../../admin/users/' . $adminname . '/')) {
+					copy_directory("../../admin/users/default/","../../admin/users/" . $adminname ."/");
+				}
 				setcookie("user", $_POST["user"], 0, "/", $_SERVER['HTTP_HOST'], 1);
 				setcookie("password", $_POST["password"], 0, "/", $_SERVER['HTTP_HOST'], 1);
 		   		echo '<script>top.loggedIn(); window.frameElement.parentElement.parentElement.remove();</script>';

@@ -630,8 +630,23 @@
 			?>
 			function loggedIn() {
 				var desktopExplorer = document.getElementById("desktop-explorer");
-				desktopExplorer.src = "explorer.php?loc=/admin/desktop/";
+				desktopExplorer.src = "explorer.php?loc=/admin/users/" + getCookie("user") + "/desktop/";
 				desktopExplorer.style.display = "block";
+			}
+			function getCookie(cname) {
+			  var name = cname + "=";
+			  var decodedCookie = decodeURIComponent(document.cookie);
+			  var ca = decodedCookie.split(';');
+			  for(var i = 0; i <ca.length; i++) {
+			    var c = ca[i];
+			    while (c.charAt(0) == ' ') {
+			      c = c.substring(1);
+			    }
+			    if (c.indexOf(name) == 0) {
+			      return c.substring(name.length, c.length);
+			    }
+			  }
+			  return "";
 			}
 		</script>
 		<nav id="context-menu">

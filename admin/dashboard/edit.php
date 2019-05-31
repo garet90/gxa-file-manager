@@ -1,5 +1,9 @@
 <?php
 	require 'auth.php';
+	if ($hasPermission == false) {
+		echo 'You don\'t have permission to edit this file.';
+		die();
+	}
 	if ($usercheck && $passcheck) { } else {
 		die();
 	}
@@ -176,7 +180,13 @@
 						}
 					}
 					if(e.keyCode==13 || e.which==13){
-						if (<?php echo $useautotab; ?>) {
+						if (<?php
+							if (isset($_COOKIE['editor-at'])) {
+								echo $_COOKIE['editor-at'];
+							} else {
+								echo $useautotab;
+							}
+						?>) {
 							e.preventDefault();
 							var locIndex = getLineNumberAndColumnIndex(this, this.selectionStart),
 							tabCount = this.value.split("\n")[locIndex[0]-1].split("\t").length-1,

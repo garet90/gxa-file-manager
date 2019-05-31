@@ -24,8 +24,9 @@
 			foreach ($files as $file) {
 				if (is_dir($file) && $file !== "") {
 					$dircount += 1;
-					$dircount += GetContentsFileFolder($file . '/')[0];
-					$filecount += GetContentsFileFolder($file . '/')[1];
+					$contentsResult = GetContentsFileFolder($file . '/');
+					$dircount += $contentsResult[0];
+					$filecount += $contentsResult[1];
 				} else {
 					$filecount += 1;
 				}
@@ -94,8 +95,9 @@
 		array_push($filetypes,"folder");
 		$icon = '<i class="fa fa-folder-o" aria-hidden="true"></i>';
 		$foldercount += 1;
-		$containsfolders += GetContentsFileFolder('../../' . $_GET['loc'])[0];
-		$containsfiles += GetContentsFileFolder('../../' . $_GET['loc'])[1];
+		$contentsResults = GetContentsFileFolder('../../' . $_GET['loc']);
+		$containsfolders += $contentsResults[0];
+		$containsfiles += $contentsResults[1];
 	} else {
 		$fileinfo = explode(':',$files[0]);
 		$filepath = explode('/',$fileinfo[1]);

@@ -1,6 +1,11 @@
 <?php
 	require 'auth.php';
 	
+	if ($hasPermission == false) {
+		echo 'You don\'t have permission to run this command.';
+		die();
+	}
+	
 	if ($usercheck && $passcheck) {
 		$files = explode(',',$_GET['files']);
 		$errors = '';
@@ -10,10 +15,10 @@
 			$filename = end($filepath);
 			if (file_exists('../..' . $_GET['loc'] . $filename)) {
 				$errors = $errors . 'Item "' . $_GET['loc'] . $filename . '" already exists. "' . $filename . '" was not moved. ';
-			} else if (strpos($_GET['moveto'], $fileinfo[1]) !== false) {
-				$errors = $errors . 'Directory "' . $filename . '" cannot be moved inside itself, so it was not moved. ';
-			} else {
+			} else if (strpos('../..' . $_GET['loc'], '../..' . $fileinfo[1]) === false) {
 				rename('../..' . $fileinfo[1],'../..' . $_GET['loc'] . $filename);
+			} else {
+				$errors = $errors . 'Directory "' . $filename . '" cannot be moved inside itself, so it was not moved. ';
 			}
 		}
 		echo $errors;

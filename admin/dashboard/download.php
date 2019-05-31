@@ -1,6 +1,11 @@
 <?php
 	require 'auth.php';
 	
+	if ($hasPermission == false) {
+		echo 'You don\'t have permission to run this command.';
+		die();
+	}
+	
 	if ($usercheck && $passcheck) {
 		function zipdirectory($zip,$folder,$root) { // zipdirectory($zip,'dashboard','/admin/')
 			$src = '../../' . $root . '/' . $folder;
