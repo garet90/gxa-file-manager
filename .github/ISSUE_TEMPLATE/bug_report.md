@@ -26,11 +26,12 @@ If applicable, add screenshots to help explain your problem.
 **Console log**
 If applicable, include console errors that have occurred.
 
-**Server**
+**Server (found in info page of server)**
  - OS: [e.g. Windows Server 2008]
  - PHP Version: [e.g. 5.6.30]
  - MySQL Version (if using): [e.g. 5.5.5-10.1.21-MariaDB]
  - GXa File Manager Version: [e.g. v0.2.6 DEVELOPMENT BUILD]
+ - Server Software: [e.g. Apache/2.4.25 (Win32) OpenSSL/1.0.2j PHP/5.6.30]
 
 **Desktop (please complete the following information):**
  - OS: [e.g. iOS]
