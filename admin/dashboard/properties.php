@@ -1,4 +1,6 @@
 <?php
+	require 'auth.php';
+
 	function formatBytes($size, $precision = 2)
 	{
 		$base = log($size, 1024);
@@ -35,7 +37,7 @@
 		return array($dircount, $filecount);
 	}
 	$totalsize = 0;
-	$files = explode(',',$_GET['files']);
+	$files = explode('|',$_GET['files']);
 	$filemtimemin = 0;
 	$filemtimemax = 0;
 	$filectimemin = 0;

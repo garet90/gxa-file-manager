@@ -158,7 +158,7 @@
 					$continue = false;
 					$folderEditable = false;
 				}
-				if (!file_exists($path)) {
+				if (!file_exists($path) && $continue) {
 					echo "Folder doesn't exist.";
 					$continue = false;
 					$folderEditable = false;
@@ -166,70 +166,68 @@
 				if ($continue) {
 					$files = scandir($path);
 					$totalsize = 0;
-					unset($files[0]);
-					if ($_GET['loc'] == '/') {
-						unset($files[1]);
-					}
-					foreach ($files as $file) {
-						$filetype = '';
-						$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
-						$filetitle = '';
-						$finalname = $file;
-						$linkTo = '';
-						if (is_dir ($path . $file)) {
-							$filetype = 'dir';
-							$fileicon = '<i class="fa fa-folder-o" aria-hidden="true"></i>';
-							$filetitle = $file . '
+					foreach ($files as $key => $file) {
+						if ($file == "." || ($_GET['loc'] == '/' && $file == '..')) { } else {
+							$filetype = '';
+							$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+							$filetitle = '';
+							$finalname = $file;
+							$linkTo = '';
+							if (is_dir ($path . $file)) {
+								$filetype = 'dir';
+								$fileicon = '<i class="fa fa-folder-o" aria-hidden="true"></i>';
+								$filetitle = $file . '
 Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
-							if ($file !== "..") {
-								$foldercount = $foldercount + 1;
-							}
-						} else {
-							$expfilename = explode('.',$file);
-							$extension = end($expfilename);
-							$filetype = '.' . $extension;
-							if (count($expfilename) == 1) {
-								$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
-								$filetype = "file";
-							} else if ($extension == "png" || $extension == "jpg" || $extension == "gif" || $extension == "bmp" || $extension == "ico") {
-								$fileicon = '<i class="fa fa-file-image-o" aria-hidden="true"></i>';
-							} else if ($extension == "txt") {
-								$fileicon = '<i class="fa fa-file-text-o" aria-hidden="true"></i>';
-							} else if ($extension == "php" || $extension == "html" || $extension == "xml" || $extension == "js" || $extension == "css") {
-								$fileicon = '<i class="fa fa-file-code-o" aria-hidden="true"></i>';
-							} else if ($extension == "wav" || $extension == "mp3") {
-								$fileicon = '<i class="fa fa-file-audio-o" aria-hidden="true"></i>';
-							} else if ($extension == "xlsx" || $extension == "xlsm") {
-								$fileicon = '<i class="fa fa-file-excel-o" aria-hidden="true"></i>';
-							} else if ($extension == "pdf") {
-								$fileicon = '<i class="fa fa-file-pdf-o" aria-hidden="true"></i>';
-							} else if ($extension == "docx" || $extension == "docm") {
-								$fileicon = '<i class="fa fa-file-word-o" aria-hidden="true"></i>';
-							} else if ($extension == "tar" || $extension == "zip" || $extension == "gz" || $extension == "7z" || $extension == "s7z" || $extension == "jar" || $extension == "rar" || $extension == "tgz") {
-								$fileicon = '<i class="fa fa-file-archive-o" aria-hidden="true"></i>';
-							} else if ($extension == "pptx" || $extension == "pptm") {
-								$fileicon = '<i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>';
-							} else if ($extension == "mov" || $extension == "qt" || $extension == "mp4" || $extension == "m4p" || $extension == "m4v") {
-								$fileicon = '<i class="fa fa-file-video-o" aria-hidden="true"></i>';
-							} else if ($extension == "gxl") {
-								$linkData = explode(':',file_get_contents($path . $file));
-								$fileicon = '<i class="fa ' . $linkData[0] . '" aria-hidden="true"></i>';
-								$linkTo = $linkData[1];
-								$finalname = substr($file,0,-4);
+								if ($file !== "..") {
+									$foldercount = $foldercount + 1;
+								}
 							} else {
-								$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
-							}
-							$filetitle = $file . '
+								$expfilename = explode('.',$file);
+								$extension = end($expfilename);
+								$filetype = '.' . $extension;
+								if (count($expfilename) == 1) {
+									$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+									$filetype = "file";
+								} else if ($extension == "png" || $extension == "jpg" || $extension == "gif" || $extension == "bmp" || $extension == "ico") {
+									$fileicon = '<i class="fa fa-file-image-o" aria-hidden="true"></i>';
+								} else if ($extension == "txt") {
+									$fileicon = '<i class="fa fa-file-text-o" aria-hidden="true"></i>';
+								} else if ($extension == "php" || $extension == "html" || $extension == "xml" || $extension == "js" || $extension == "css") {
+									$fileicon = '<i class="fa fa-file-code-o" aria-hidden="true"></i>';
+								} else if ($extension == "wav" || $extension == "mp3") {
+									$fileicon = '<i class="fa fa-file-audio-o" aria-hidden="true"></i>';
+								} else if ($extension == "xlsx" || $extension == "xlsm") {
+									$fileicon = '<i class="fa fa-file-excel-o" aria-hidden="true"></i>';
+								} else if ($extension == "pdf") {
+									$fileicon = '<i class="fa fa-file-pdf-o" aria-hidden="true"></i>';
+								} else if ($extension == "docx" || $extension == "docm") {
+									$fileicon = '<i class="fa fa-file-word-o" aria-hidden="true"></i>';
+								} else if ($extension == "tar" || $extension == "zip" || $extension == "gz" || $extension == "7z" || $extension == "s7z" || $extension == "jar" || $extension == "rar" || $extension == "tgz") {
+									$fileicon = '<i class="fa fa-file-archive-o" aria-hidden="true"></i>';
+								} else if ($extension == "pptx" || $extension == "pptm") {
+									$fileicon = '<i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>';
+								} else if ($extension == "mov" || $extension == "qt" || $extension == "mp4" || $extension == "m4p" || $extension == "m4v") {
+									$fileicon = '<i class="fa fa-file-video-o" aria-hidden="true"></i>';
+								} else if ($extension == "gxl") {
+									$linkData = explode(':',file_get_contents($path . $file));
+									$fileicon = '<i class="fa ' . $linkData[0] . '" aria-hidden="true"></i>';
+									$linkTo = $linkData[1];
+									$finalname = substr($file,0,-4);
+								} else {
+									$fileicon = '<i class="fa fa-file-o" aria-hidden="true"></i>';
+								}
+								$filetitle = $file . '
 Size: ' . formatBytes(filesize($path . $file)) . '
 Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
-							$filecount = $filecount + 1;
-							$totalsize += filesize($path . $file);
+								$filecount = $filecount + 1;
+								$totalsize += filesize($path . $file);
+							}
+							$fileorder = "0";
+							if ($filetype == "dir") {
+								$fileorder = "-1";
+							}
+							echo '<div data-naming="false" data-selected="false" data-name="' . $file . '" data-filetype="' . $filetype . '" ondragstart="drag(event)" data-continue="false" draggable="true" class="file" title="' . $filetitle . '" style="order: ' . $fileorder . '" onmousedown="selectfile(this,false)" onclick="selectfile(this,true)" data-linkto="' . $linkTo . '"><div class="file__icon">' . $fileicon . '</div><div class="file__name" contenteditable="false">' . $finalname . '</div></div>';
 						}
-						$fileorder = "0";
-						if ($filetype == "dir") {
-							$fileorder = "-1";
-						}
-						echo '<div data-naming="false" data-selected="false" data-name="' . $file . '" data-filetype="' . $filetype . '" ondragstart="drag(event)" data-continue="false" draggable="true" class="file" title="' . $filetitle . '" style="order: ' . $fileorder . '" onmousedown="selectfile(this,false)" onclick="selectfile(this,true)" data-linkto="' . $linkTo . '"><div class="file__icon">' . $fileicon . '</div><div class="file__name" contenteditable="false">' . $finalname . '</div></div>';
 					}
 				}
 			?>
@@ -263,7 +261,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 						} else {
 							var filetype = "file";
 						}
-						selectedFileNames += filetype + ":" + loc + selectedFiles[i].getAttribute("data-name") + ",";
+						selectedFileNames += filetype + ":" + loc + selectedFiles[i].getAttribute("data-name") + "|";
 					}
 				}
 				
@@ -279,7 +277,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				var loc = document.getElementById("loc").innerHTML;
 				if (ev.dataTransfer.getData("loc") !== loc) {
 					frameAction("move.php?files=" + ev.dataTransfer.getData("files") + "&loc=" + loc, "Moving...");
-					var filesMoved = ev.dataTransfer.getData("files").split(',');
+					var filesMoved = ev.dataTransfer.getData("files").split('|');
 					filesMoved.forEach(function(file) {
 						if (file !== "") {
 							var fileSplit = file.split(':'),
@@ -293,10 +291,10 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 			}
 		</script>
 		<script type="text/javascript">
-			if (window.frameElement.id == "desktop-explorer") {
+			if (window.frameElement.id == "desktop-explorer" && document.getElementById("folder-editable").innerHTML == "true") {
 				document.getElementsByTagName("footer")[0].style.display = "none";
 				top.document.getElementById("cm-files-pd").style.display = "none";
-				document.getElementsByClassName("file")[0].remove();
+				removeFilesByString("file:..");
 				document.getElementById("files").style.flexDirection = "column";
 				document.getElementById("files").style.justifyContent = "left";
 				document.getElementById("files").style.maxHeight = "100vh";
@@ -305,8 +303,6 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 			} else {
 				top.document.getElementById("cm-files-pd").style.display = "block";
 			}
-		</script>
-		<script type="text/javascript">
 			function clickInsideElement( e, className ) {
 				var el = e.srcElement || e.target;
 			
@@ -737,7 +733,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 						} else {
 							var filetype = "file";
 						}
-						selectedFileNames += filetype + ":" + loc + selectedFiles[i].getAttribute("data-name") + ",";
+						selectedFileNames += filetype + ":" + loc + selectedFiles[i].getAttribute("data-name") + "|";
 					}
 				}
 				
@@ -771,7 +767,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					}
 				} else if (action == "cm-files-de") {
 					if (selectedFiles.length > 0) {
-						var filesData = selectedFileNames.split(',');
+						var filesData = selectedFileNames.split('|');
 						top.createWindow("confirm.php?title=Delete " + selectedFiles.length + " items%3F&action=delete.php?loc=" + loc + "%26files=" + selectedFileNames + "%26frameToReload=" + window.frameElement.id,325,200,'center','center',true);
 					}
 				} else if (action == "cm-files-rn") {
@@ -797,7 +793,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 							selectedName.onblur = function() {
 								selectedName.contentEditable = "false";
 								if (selectedName.innerHTML !== oldName) {
-									selectedName.innerHTML = selectedName.innerHTML.replace(/[/\\?%*:|"<>]/g, '');
+									selectedName.innerHTML = selectedName.innerHTML.replace(/[\/\\?%*:|"<>]|\.+$|(>)|(<)/g, '');
 									if (getFileByName(selectedName.innerHTML) || selectedName.innerHTML == "") {
 										selectedName.innerHTML = oldName;
 									} else {
@@ -887,7 +883,7 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				} else if (action == "cm-files-pa") {
 					var clipboard = top.document.getElementById("clipboard");
 					if (clipboard.innerHTML !== "") {
-						var filesToCreate = clipboard.innerHTML.split(","),
+						var filesToCreate = clipboard.innerHTML.split("|"),
 							continueToPaste = true;
 						filesToCreate.forEach(function(file){
 							var fileSplit = file.split(":"),
@@ -1029,17 +1025,19 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 				return filename;
 			}
 			function removeFilesByString(filestring) {
-				var files = filestring.split(','),
+				var files = filestring.split('|'),
 					folderInfo = document.getElementById("folderInfo");
 				files.forEach(function(file) {
 					var filesplit = file.split(':');
 					var filepath = filesplit[1].split('/');
 					var filename = filepath[filepath.length-1];
-					getFileByName(filename).remove();
-					if (filesplit[0] == "dir") {
-						folderInfo.setAttribute("data-foc",+folderInfo.getAttribute("data-foc")-1);
-					} else {
-						folderInfo.setAttribute("data-fic",+folderInfo.getAttribute("data-fic")-1);
+					if (getFileByName(filename) !== false) {
+						getFileByName(filename).remove();
+						if (filesplit[0] == "dir") {
+							folderInfo.setAttribute("data-foc",+folderInfo.getAttribute("data-foc")-1);
+						} else {
+							folderInfo.setAttribute("data-fic",+folderInfo.getAttribute("data-fic")-1);
+						}
 					}
 				});
 				folderInfo.innerHTML = "- " + folderInfo.getAttribute("data-foc") + " folders and " + folderInfo.getAttribute("data-fic") + " files";

@@ -23,7 +23,7 @@
 			closedir($dir);
 		}
 	
-		$files = explode(",", $_GET['files']);
+		$files = explode("|", $_GET['files']);
 		$errors = '';
 		foreach ($files as $file) {
 			$splitpath = explode(":", $file);

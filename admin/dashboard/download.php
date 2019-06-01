@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 	
-	if ($hasPermission == false) {
+	if ($hasPermission == false || $innerPermission == false) {
 		echo 'You don\'t have permission to run this command.';
 		die();
 	}
@@ -28,7 +28,7 @@
 			closedir($dir);
 		}
 		if (isset($_GET['files'])) {
-			$files = explode(',', $_GET['files']);
+			$files = explode('|', $_GET['files']);
 		} else {
 			$files = array('dir:' . $_GET['loc']);
 		}

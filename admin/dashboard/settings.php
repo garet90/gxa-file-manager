@@ -89,6 +89,8 @@
 								if (mysqli_num_rows($suc) == 0 && $_POST['un'] != "default") {
 									mysqli_query($sqlilink,"INSERT INTO `users` (`ID`, `name`, `password`, `permissions`) VALUES (NULL, '" . $_POST['un'] . "', '" . password_hash($_POST["pw"], PASSWORD_DEFAULT) . "', '" . $_POST['up'] . "') ");
 									copy_directory('../../admin/users/default/','../../admin/users/' . $_POST['un'] . '/');
+									echo "Success!";
+									die();
 								} else {
 									die('Username is taken!');
 								}
@@ -114,7 +116,7 @@
 			} else {
 				setcookie("editor-at", "false", time() + (86400 * 30), "/", $_SERVER['HTTP_HOST'], 1);
 			}
-			header('Location: settings.php');
+			echo "Success!";
 			die();
 		}
 	}
@@ -228,10 +230,20 @@
 				margin: 5px 0;
 				color: #444;
 			}
+			#action-frame {
+				display: none;
+			}
+			.response.red {
+				color: red;
+			}
+			.response.green {
+				color: green;
+			}
 		</style>
 		<link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.css">
 	</head>
 	<body>
+		<iframe name="action-frame" id="action-frame" src="about:blank"></iframe>
 		<nav class="nav">
 			<ul class="nav__items">
 				<li class="nav__item active" onmousedown="changePage('general',this)">
@@ -258,23 +270,27 @@
 			</div>
 			<div id="menu-my-account" class="menu">
 				<h2 class="menu__subheader">Change Password</h2>
-				<form class="menu__form" method="post" action="settings.php" autocomplete="off">
+				<form class="menu__form" method="post" action="settings.php" target="action-frame" onsubmit="targetForm(this)">
 					<input name="action" type="hidden" value="cp" />
+					<input name="un" type="text" style="display: none" autocomplete="username" />
 					<label class="menu__label" for="cp-op">Old password</label><br />
-					<input name="op" class="menu__input" id="cp-op" type="password" /><br />
+					<input name="op" class="menu__input" id="cp-op" type="password" autocomplete="current-password" /><br />
 					<label class="menu__label" for="cp-np">New password</label><br />
-					<input name="np" class="menu__input" id="cp-np" type="password" /><br />
+					<input name="np" class="menu__input" id="cp-np" type="password" autocomplete="new-password" /><br />
 					<label class="menu__label" for="cp-cp">Confirm password</label><br />
-					<input name="cp" class="menu__input" id="cp-cp" type="password" /><br />
-					<input class="menu__submit" type="submit" value="Change Password" />
+					<input name="cp" class="menu__input" id="cp-cp" type="password" autocomplete="new-password" /><br />
+					<input class="menu__submit" type="submit" value="Change Password" /><br />
+					<span class="response"></span>
 				</form>
 				<h2 class="menu__subheader">Deactivate Account</h2>
-				<form class="menu__form" method="post" action="settings.php" autocomplete="off">
+				<form class="menu__form" method="post" action="settings.php" target="action-frame" onsubmit="targetForm(this)">
 					<input name="action" type="hidden" value="da" />
+					<input name="un" type="text" style="display: none" autocomplete="username" />
 					<label class="menu__label" for="da-pw">Password</label><br />
-					<input name="pw" class="menu__input" id="da-pw" type="password" /><br />
+					<input name="pw" class="menu__input" id="da-pw" type="password" autocomplete="current-password" /><br />
 					Warning: Deactivated accounts are unrecoverable. Deactivation will delete your user folder, containing your desktop and other personal files. Continue?<br />
-					<input class="menu__submit" type="submit" value="Deactivate Account" />
+					<input class="menu__submit" type="submit" value="Deactivate Account" /><br />
+					<span class="response"></span>
 				</form>
 			</div>
 			<div id="menu-file-explorer" class="menu">
@@ -284,7 +300,7 @@
 			</div>
 			<div id="menu-file-editor" class="menu">
 				<h2 class="menu__subheader">Function</h2>
-				<form class="menu__form" method="post" action="settings.php" autocomplete="off">
+				<form class="menu__form" method="post" action="settings.php" target="action-frame" onsubmit="targetForm(this)">
 					<input type="hidden" name="action" value="ef" />
 					<p class="menu__cb-container"><input type="checkbox" class="menu__checkbox" id="ef-at" name="at" <?php
 						if ((isset($_COOKIE['editor-at']) && $_COOKIE['editor-at'] == "true") || (isset($_COOKIE['editor-at']) == false && $useautotab == true)) {
@@ -292,23 +308,25 @@
 						}
 					?> /><label class="menu__label" for="ef-at">Use Auto Tab</label></p>
 					<p class="menu__description">Auto Tab automatically inserts the same amount of tabs that were in the previous line in the beginning of each new line. This is very useful for organization when programming.</p>
-					<input type="submit" value="Save Changes" />
+					<input class="menu__submit" type="submit" value="Save Changes" /><br />
+					<span class="response"></span>
 				</form>
 			</div>
 			<div id="menu-user-accounts" class="menu">
 				<h2 class="menu__subheader">Create Account</h2>
-				<form class="menu__form" method="post" action="settings.php" autocomplete="off">
+				<form class="menu__form" method="post" action="settings.php" target="action-frame" onsubmit="targetForm(this)">
 					<input name="action" type="hidden" value="ca" />
 					<label class="menu__label" for="ca-un">Username</label><br />
-					<input name="un" class="menu__input" id="ca-un" type="text" /><br />
+					<input name="un" class="menu__input" id="ca-un" type="text" autocomplete="new-username" /><br />
 					<label class="menu__label" for="ca-pw">Password</label><br />
-					<input name="pw" class="menu__input" id="ca-pw" type="password" /><br />
+					<input name="pw" class="menu__input" id="ca-pw" type="password" autocomplete="new-password" /><br />
 					<label class="menu__label" for="ca-cp">Confirm password</label><br />
-					<input name="cp" class="menu__input" id="ca-cp" type="password" /><br />
+					<input name="cp" class="menu__input" id="ca-cp" type="password" autocomplete="new-password" /><br />
 					<label class="menu__label" for="ca-up">User permissions</label><br />
 					<textarea name="up" class="menu__textarea" id="ca-up"></textarea><br />
 					Warning: User permissions are highly experimental at this time. Use at your own risk! Information on how to use permissions can be found <a href="https://github.com/garet90/gxa-file-manager/wiki/Permissions" target="_new">here</a>.<br />
-					<input class="menu__submit" type="submit" value="Create Account" />
+					<input class="menu__submit" type="submit" value="Create Account" /><br />
+					<span class="response"></span>
 				</form>
 			</div>
 		</div>
@@ -352,6 +370,27 @@
 			document.addEventListener( "click", function(e) {
 				top.closeContextMenu();
 			} );
+			var targetedForm = undefined;
+			document.getElementById("action-frame").onload = function() {
+				showResponse(this);
+			}
+			function targetForm(x) {
+				targetedForm = x;
+				var responseText = targetedForm.getElementsByClassName("response")[0];
+				responseText.innerHTML = "Working...";
+				responseText.classList.remove("green");
+				responseText.classList.remove("red");
+			}
+			function showResponse(actionFrame) {
+				var response = actionFrame.contentWindow.document.body.innerHTML,
+					responseText = targetedForm.getElementsByClassName("response")[0];
+				responseText.innerHTML = response;
+				if (response == "Success!") {
+					responseText.classList.add("green");
+				} else {
+					responseText.classList.add("red");
+				}
+			}
 		</script>
 	</body>
 </html>

@@ -1,7 +1,7 @@
 <?php
 	require 'auth.php';
 	
-	if ($hasPermission == false) {
+	if ($hasPermission == false || $innerPermission == false) {
 		echo 'You don\'t have permission to run this command.';
 		die();
 	}

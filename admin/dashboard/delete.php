@@ -23,7 +23,7 @@
 				rmdir($dir);
 			}
 		}
-		$files = explode(',', $_GET['files']);
+		$files = explode('|', $_GET['files']);
 		$errors = '';
 		$okrun = true;
 		foreach ($files as $file) {

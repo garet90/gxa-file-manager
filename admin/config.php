@@ -1,6 +1,6 @@
 <?php
 
-	$gxaversion = 'v0.2.5 DEVELOPMENT BUILD';
+	$gxaversion = 'v0.2.6 DEVELOPMENT BUILD';
 
 	// ------------------------------------ //
 	//       ACCOUNT / LOGIN SETTINGS       //

@@ -7,7 +7,7 @@
 	}
 	
 	if ($usercheck && $passcheck) {
-		$files = explode(',',$_GET['files']);
+		$files = explode('|',$_GET['files']);
 		$errors = '';
 		foreach ($files as $file) {
 			$fileinfo = explode(':',$file);

@@ -92,9 +92,9 @@
 	<body>
 		<form action="login.php" method="post">
 			<label for="username">Username</label><br />
-			<input type="text" name="user" id="username" /><br />
+			<input type="text" name="user" id="username" autocomplete="username" /><br />
 			<label for="password">Password</label><br />
-			<input type="password" name="password" id="password" /><br />
+			<input type="password" name="password" id="password" autocomplete="current-password" /><br />
 			<input type="submit" /><br />
 			<?php
 				if (isset($_GET['errors'])) {
