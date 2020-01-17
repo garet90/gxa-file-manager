@@ -85,12 +85,12 @@
 				color: #1C1C1C;
 			}
 			.file:hover {
-				border-color: #E0E6F8;
-				background-color: #EFF2FB;
+				border-color: rgba(169,188,245,.5);
+				background-color: rgba(169,188,245,.25);
 			}
 			.file.selected {
-				background-color: #E0E6F8;
-				border-color: #CED8F6;
+				background-color: rgba(169,188,245,.5);
+				border-color: rgba(169,188,245,.75);
 			}
 			.file.faded {
 				border: 1px dashed #CED8F6;
@@ -125,8 +125,8 @@
 			#selector {
 				position: absolute;
 				z-index: 1;
-				background-color: rgba(100,130,255,.25);
-				border: 1px solid rgba(100,130,255,.5);
+				background-color: rgba(0,0,255,.125);
+				border: 1px solid rgba(0,0,255,.5);
 				box-sizing: border-box;
 				display: none;
 			}
@@ -136,6 +136,16 @@
 			#status {
 				float: right;
 				display: inline-block;
+			}
+			body.desktop footer {
+				display: none;
+			}
+			body.desktop #files {
+				flex-direction: column;
+				justify-content: left;
+				max-height: 100vh;
+				margin: 0;
+				width: 0;
 			}
 		</style>
 	</head>
@@ -292,14 +302,9 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 		</script>
 		<script type="text/javascript">
 			if (window.frameElement.id == "desktop-explorer" && document.getElementById("folder-editable").innerHTML == "true") {
-				document.getElementsByTagName("footer")[0].style.display = "none";
-				top.document.getElementById("cm-files-pd").style.display = "none";
 				removeFilesByString("file:..");
-				document.getElementById("files").style.flexDirection = "column";
-				document.getElementById("files").style.justifyContent = "left";
-				document.getElementById("files").style.maxHeight = "100vh";
-				document.getElementById("files").style.margin = "0";
-				document.getElementById("files").style.width = "0";
+				document.body.classList.add("desktop");
+				document.documentElement.classList.add("desktop");
 			} else {
 				top.document.getElementById("cm-files-pd").style.display = "block";
 			}
@@ -1089,6 +1094,21 @@ Modified: ' . date ("m/d/Y, H:i:s", filemtime($path . $file));
 					}
 				}
 			?>
+			function getCookie(cname) {
+			  var name = cname + "=";
+			  var decodedCookie = decodeURIComponent(document.cookie);
+			  var ca = decodedCookie.split(';');
+			  for(var i = 0; i <ca.length; i++) {
+			    var c = ca[i];
+			    while (c.charAt(0) == ' ') {
+			      c = c.substring(1);
+			    }
+			    if (c.indexOf(name) == 0) {
+			      return c.substring(name.length, c.length);
+			    }
+			  }
+			  return "";
+			}
 		</script>
 	</body>
 </html>

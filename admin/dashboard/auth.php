@@ -30,7 +30,7 @@
 			die();
 		}
 		$sqlilink = mysqli_connect($mysqlip, $mysqluser, $mysqlpassword, $mysqldatabase);
-		$user = mysqli_query($sqlilink,"SELECT * FROM `users` WHERE name='" . $_COOKIE['user'] . "';");
+		$user = mysqli_query($sqlilink,"SELECT * FROM `users` WHERE name='" . addslashes($_COOKIE['user']) . "';");
 		if (mysqli_num_rows($user) == 1) {
 			$usercheck = true;
 		} else {
@@ -38,9 +38,9 @@
 			header('Location: login.php?errors=' . $errors);
 			mysqli_close($sqlilink);
 			die();
-		} 
-		while($row = mysqli_fetch_array($user, MYSQL_ASSOC)) {
-			if (password_verify($_COOKIE['password'],$row['password'])) {
+		}
+		while($row = mysqli_fetch_array($user)) {
+			if (password_verify(addslashes($_COOKIE['password']),$row['password'])) {
 				$passcheck = true;
 				$permissions = explode(',',$row['permissions']);
 			} else {
@@ -59,7 +59,7 @@
 		mysqli_close($sqlilink);
 	} else {
 		if (isset($_COOKIE['user']) && isset($_COOKIE['password'])) {
-			if ($_COOKIE['user'] == $adminname && $_COOKIE['password'] == $adminpassword) {
+			if (addslashes($_COOKIE['user']) == $adminname && addslashes($_COOKIE['password']) == $adminpassword) {
 				$usercheck = true;
 				$passcheck = true;
 				$permissions = array('*');

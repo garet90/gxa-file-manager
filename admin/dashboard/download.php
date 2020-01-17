@@ -17,7 +17,7 @@
 						zipdirectory($zip,$folder . '/' . $file,$root);
 					}
 					else {
-						$zip->addFile($src . '/' . $file,$folder . '/' . $file);
+						$zip->addFile($src . '/' . $file,ltrim($folder . '/' . $file,'/'));
 					}
 					$fc = $fc + 1;
 				}
@@ -44,7 +44,7 @@
 			$filepathex = explode('/', $filedata[1]);
 			$filename = end($filepathex);
 			if ($filedata[0] == "file") {
-				$zip->addFile($filepath, $filename);
+				$zip->addFile($filepath, ltrim($filename, '/'));
 			} else {
 				zipdirectory($zip,$filename,$_GET['loc']);
 			}

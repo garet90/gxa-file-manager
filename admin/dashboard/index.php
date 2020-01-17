@@ -1,3 +1,6 @@
+<?php
+	require '../config.php';
+?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -630,7 +633,7 @@
 			?>
 			function loggedIn() {
 				var desktopExplorer = document.getElementById("desktop-explorer");
-				desktopExplorer.src = "explorer.php?loc=/admin/users/" + getCookie("user") + "/desktop/";
+				desktopExplorer.src = "explorer.php?loc=/<?php echo $adminfoldername; ?>/users/" + getCookie("user") + "/desktop/";
 				desktopExplorer.style.display = "block";
 			}
 			function getCookie(cname) {

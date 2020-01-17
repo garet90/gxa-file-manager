@@ -1,23 +1,25 @@
 <?php
 
-	$gxaversion = 'v0.2.6 DEVELOPMENT BUILD';
+	$gxaversion = 'v0.3.0-alpha';
+	
+	$adminfoldername = 'admin';
 
 	// ------------------------------------ //
 	//       ACCOUNT / LOGIN SETTINGS       //
 	// ------------------------------------ //
 	
-	$usemysql = false;
+	$usemysql = true;
 	// Turning this on will allow the use of a MySQL database to hold login information, settings, etc. It will also enable multiple usually disabled features.
 	// This may become required in the future.
 
 	$mysqluser = 'root';
 
-	$mysqlpassword = '';
+	$mysqlpassword = 'password';
 
-	$mysqldatabase = 'GXa-panel';
+	$mysqldatabase = 'gxa';
 	// Create this database and accompanying MySQL user before launching GXa File Manager.
 
-	$mysqlip = '127.0.0.1';
+	$mysqlip = 'localhost';
 
 	// THE USERNAME AND PASSWORD OF THE ADMINISTRATOR ACCOUNT WILL BE SET TO THE VALUES OF THE FIRST LOGIN TO THE SERVER IF USING SQL
 
